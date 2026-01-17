@@ -1,6 +1,6 @@
 {
   "name": "@zuolan/micucodeline-win32-x64",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "description": "Windows x64 binary for MicuCodeLine",
   "files": ["micucodeline.exe"],
   "os": ["win32"],

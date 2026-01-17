@@ -1,6 +1,6 @@
 {
   "name": "@zuolan/micucodeline-linux-x64-musl",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "description": "Linux x64 static binary for MicuCodeLine (musl libc)",
   "files": ["micucodeline"],
   "os": ["linux"],
