@@ -21,7 +21,7 @@ MicuCodeLine 是 **MICU OpenClaudeCode 站特供版** Claude Code 状态栏工�
 
 ### npm 安装（推荐）
 ```bash
-npm install -g @openclaudecode/micucodeline
+npm install -g @zuolan/micucodeline
 ```
 
 安装后默认路径：`~/.claude/micucodeline/micucodeline`
@@ -52,14 +52,12 @@ chmod +x ~/.claude/micucodeline/micucodeline
 
 > 说明：`micucodeline --init` 只会生成本工具的 `config.toml` 和主题文件，**不会**自动修改 `settings.json`。
 
-## 余额相关配置（必填）
+## 余额相关配置（也可以直接运行一下~/.claude/micucodeline/micucodeline.exe进行api配置）
 在 `settings.json` 的 `env` 中添加以下变量：
 
 - `BALANCE_API_KEY`：系统访问令牌
 - `BALANCE_API_USER`：用户 ID（昵称下方）
 - `BALANCE_API_URL`：可选，默认 `https://www.openclaudecode.cn/api/user/self`
-- `ANTHROPIC_AUTH_TOKEN`：保持 Claude Code 正常请求（示例填 xxx）
-- `ANTHROPIC_BASE_URL`：你的 Claude Code Base URL（示例填 xxx）
 
 获取方式：
 - Token：控制台 → 个人设置 → 安全设置 → 系统访问令牌 → 生成令牌
