@@ -1,6 +1,6 @@
 {
   "name": "@zuolan/micucodeline-darwin-x64",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "macdarwin x64 binary for MicuCodeLine",
   "files": ["micucodeline"],
   "os": ["darwin"],
