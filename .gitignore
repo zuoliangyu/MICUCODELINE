@@ -1,0 +1,40 @@
+# Rust
+/target
+Cargo.lock
+
+# Claude
+CLAUDE.md
+.claude/
+
+# Spec Workflow
+.spec-workflow/
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backup
+*.bak
+*.backup
+
+# Logs
+*.log
+
+# Temporary
+*.tmp
+*.temp
+
+# Node (for npm packages)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

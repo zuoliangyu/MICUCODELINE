@@ -1,0 +1,14 @@
+{
+  "name": "@openclaudecode/micucodeline-win32-x64",
+  "version": "0.0.0",
+  "description": "Windows x64 binary for MicuCodeLine",
+  "files": ["micucodeline.exe"],
+  "os": ["win32"],
+  "cpu": ["x64"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuoliangyu/MICUCODELINE"
+  },
+  "author": "Haleclipse",
+  "license": "MIT"
+}

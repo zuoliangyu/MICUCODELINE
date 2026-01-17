@@ -1,0 +1,14 @@
+{
+  "name": "@openclaudecode/micucodeline-darwin-arm64",
+  "version": "0.0.0",
+  "description": "macOS ARM64 binary for MicuCodeLine",
+  "files": ["micucodeline"],
+  "os": ["darwin"],
+  "cpu": ["arm64"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuoliangyu/MICUCODELINE"
+  },
+  "author": "Haleclipse",
+  "license": "MIT"
+}
