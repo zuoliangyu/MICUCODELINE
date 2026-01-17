@@ -45,3 +45,6 @@ npm-publish/
 # Debug and test files
 debug-postinstall.js
 test-postinstall.js
+
+
+.spec-workflow
