@@ -113,16 +113,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap_or(false);
 
             if is_first_run {
-                // First-time run: show welcome message and launch configurator directly
+                // First-time run: show welcome message and launch API setup first
                 println!("👋 Welcome to MicuCodeLine!");
-                println!("📝 Let's set up your configuration...");
+                println!("📝 Let's set up your API configuration...");
                 println!("");
 
                 // Initialize config directory and themes
                 let _ = Config::init();
 
-                // Launch configurator directly
-                micucodeline::ui::run_configurator()?;
+                // Launch API balance setup first
+                micucodeline::ui::run_balance_setup()?;
                 return Ok(());
             }
         }
