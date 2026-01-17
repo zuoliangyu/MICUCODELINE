@@ -1,0 +1,34 @@
+{
+  "name": "@zuolan/micucodeline",
+  "version": "1.0.0",
+  "description": "MicuCodeLine - High-performance Claude Code StatusLine tool",
+  "bin": {
+    "micucodeline": "bin/micucodeline.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "optionalDependencies": {
+    "@zuolan/micucodeline-darwin-x64": "1.0.0",
+    "@zuolan/micucodeline-darwin-arm64": "1.0.0",
+    "@zuolan/micucodeline-linux-x64": "1.0.0",
+    "@zuolan/micucodeline-linux-x64-musl": "1.0.0",
+    "@zuolan/micucodeline-win32-x64": "1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuoliangyu/MICUCODELINE.git"
+  },
+  "keywords": [
+    "claude",
+    "statusline",
+    "claude-code",
+    "rust",
+    "cli"
+  ],
+  "author": "Haleclipse",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
