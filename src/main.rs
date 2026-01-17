@@ -98,6 +98,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Check if stdin has data
     if io::stdin().is_terminal() {
+        // Check if this is first-time run (no config exists)
+        #[cfg(feature = "tui")]
+        {
+            use std::path::PathBuf;
+
+            // Try to get config path
+            let config_path: Option<PathBuf> = dirs::config_dir()
+                .map(|p| p.join("micucodeline").join("config.toml"));
+
+            let is_first_run = config_path
+                .as_ref()
+                .map(|p| !p.exists())
+                .unwrap_or(false);
+
+            if is_first_run {
+                // First-time run: show welcome message and launch configurator directly
+                println!("👋 Welcome to MicuCodeLine!");
+                println!("📝 Let's set up your configuration...");
+                println!("");
+
+                // Initialize config directory and themes
+                let _ = Config::init();
+
+                // Launch configurator directly
+                micucodeline::ui::run_configurator()?;
+                return Ok(());
+            }
+        }
+
         // No input data available, show main menu
         #[cfg(feature = "tui")]
         {

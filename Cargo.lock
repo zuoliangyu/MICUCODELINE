@@ -685,7 +685,7 @@ checksum = "32a282da65faaf38286cf3be983213fcf1d2e2a58700e808f83f4ea9a4804bc0"
 
 [[package]]
 name = "micucodeline"
-version = "1.0.6"
+version = "1.0.7"
 dependencies = [
  "ansi-to-tui",
  "ansi_term",

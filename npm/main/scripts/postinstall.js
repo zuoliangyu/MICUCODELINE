@@ -148,7 +148,35 @@ try {
   if (!silent) {
     console.log('✨ MicuCodeLine is ready for Claude Code!');
     console.log(`📍 Location: ${targetPath}`);
-    console.log('🎉 You can now use: micucodeline --help');
+    console.log('');
+
+    // Auto-run configuration if this is a global install
+    const isGlobalInstall = process.env.npm_config_global === 'true';
+
+    if (isGlobalInstall && process.stdin.isTTY) {
+      console.log('🔧 Starting first-time setup...');
+      console.log('');
+
+      try {
+        const { spawnSync } = require('child_process');
+        const result = spawnSync(targetPath, [], {
+          stdio: 'inherit',
+          shell: true
+        });
+
+        if (result.status === 0) {
+          console.log('');
+          console.log('✅ Setup completed!');
+          console.log('🎉 You can now use: micucodeline --help');
+        }
+      } catch (error) {
+        console.log('');
+        console.log('⚠️  Could not auto-run setup.');
+        console.log(`💡 Please run manually: ${targetPath}`);
+      }
+    } else {
+      console.log('🎉 You can now use: micucodeline --help');
+    }
   }
 } catch (error) {
   // Silent failure - don't break installation
