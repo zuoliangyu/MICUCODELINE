@@ -63,7 +63,6 @@ chmod +x ~/.claude/micucodeline/micucodeline
 
 ## 余额配置（重要）
 
-### 方式一：使用配置工具（推荐）
 
 **无论是通过 npm 安装还是手动安装，安装完成后都必须先运行配置工具：**
 
@@ -81,28 +80,19 @@ C:\Users\你的用户名\.claude\micucodeline\micucodeline.exe
 
 ![配置参考图](https://github.com/zuoliangyu/MICUCODELINE/blob/master/assets/image2.png)
 
-### 方式二：手动配置
-
 在 `~/.claude/settings.json` 的 `env` 中添加以下变量：
-
-- `BALANCE_API_KEY`：系统访问令牌
-- `BALANCE_API_USER`：用户 ID（昵称下方）
-- `BALANCE_API_URL`：可选，默认 `https://www.openclaudecode.cn/api/user/self`
-
+或者直接用CC Swich也行就是添加一下statusLine
 示例：
 ```json
 {
   "env": {
     "ANTHROPIC_AUTH_TOKEN": "xxx",
-    "ANTHROPIC_BASE_URL": "xxx",
-    "BALANCE_API_KEY": "YOUR_TOKEN",
-    "BALANCE_API_USER": "12345",
-    "BALANCE_API_URL": "https://www.openclaudecode.cn/api/user/self"
+    "ANTHROPIC_BASE_URL": "https://www.openclaudecode.cn",
   },
   "statusLine": {
-    "type": "command",
-    "command": "~/.claude/micucodeline/micucodeline",
-    "padding": 0
+    "command": "%USERPROFILE%\\.claude\\micucodeline\\micucodeline.exe",
+    "padding": 0,
+    "type": "command"
   }
 }
 ```
