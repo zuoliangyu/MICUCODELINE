@@ -1,4 +1,6 @@
-use super::{ApiConfig, BalanceData, UserData, UserResponse};
+use super::{
+    ApiConfig, BalanceData, SubscriptionResponse, UsageResponse, UserSelfApiResponse,
+};
 use std::time::Duration;
 
 const TIMEOUT_SECS: u64 = 5;
@@ -16,51 +18,105 @@ impl ApiClient {
         Self { config, agent }
     }
 
-    pub fn get_user_data(&self) -> Result<UserData, Box<dyn std::error::Error>> {
+    /// 用当前 API Key 调用 /api/user/self 获取用户信息（含 display_name、group、quota 等）
+    pub fn get_user_self(&self) -> Result<BalanceData, Box<dyn std::error::Error>> {
+        let url = format!(
+            "{}/api/user/self",
+            self.config.api_base_url.trim_end_matches('/')
+        );
+
+        let response = self
+            .agent
+            .get(&url)
+            .set("Authorization", &format!("Bearer {}", self.config.api_key))
+            .call()?;
+
+        let resp: UserSelfApiResponse = serde_json::from_str(&response.into_string()?)?;
+
+        if !resp.success {
+            return Err(format!("API error: {}", resp.message).into());
+        }
+
+        let data = resp.data.ok_or("No data in response")?;
+        Ok(BalanceData::from_user_data(&data))
+    }
+
+    /// 通过 new-api 用户 access token 调用 /api/user/self 获取用户真实余额。
+    /// 适用于 API Key 设置了无限额度、billing 接口返回 ∞ 的情况。
+    pub fn get_user_self_balance(
+        &self,
+        access_token: &str,
+        user_id: i64,
+        quota_per_unit: f64,
+        exchange_rate: f64,
+    ) -> Result<BalanceData, Box<dyn std::error::Error>> {
+        let url = format!(
+            "{}/api/user/self",
+            self.config.api_base_url.trim_end_matches('/')
+        );
+
+        let response = self
+            .agent
+            .get(&url)
+            .set("Authorization", &format!("Bearer {}", access_token))
+            .set("New-Api-User", &user_id.to_string())
+            .call()?;
+
+        let resp: UserSelfApiResponse = serde_json::from_str(&response.into_string()?)?;
+
+        if !resp.success {
+            return Err(format!("API error: {}", resp.message).into());
+        }
+
+        let data = resp.data.ok_or("No data in response")?;
+        Ok(BalanceData::from_user_self(
+            &data,
+            quota_per_unit,
+            exchange_rate,
+        ))
+    }
+
+    fn get_subscription(&self) -> Result<SubscriptionResponse, Box<dyn std::error::Error>> {
+        let url = format!(
+            "{}/v1/dashboard/billing/subscription",
+            self.config.api_base_url.trim_end_matches('/')
+        );
+
+        let response = self
+            .agent
+            .get(&url)
+            .set("Authorization", &format!("Bearer {}", self.config.api_key))
+            .call()?;
+
+        let resp: SubscriptionResponse = serde_json::from_str(&response.into_string()?)?;
+        Ok(resp)
+    }
+
+    fn get_usage(&self) -> Result<UsageResponse, Box<dyn std::error::Error>> {
+        let url = format!(
+            "{}/v1/dashboard/billing/usage",
+            self.config.api_base_url.trim_end_matches('/')
+        );
+
+        let response = self
+            .agent
+            .get(&url)
+            .set("Authorization", &format!("Bearer {}", self.config.api_key))
+            .call()?;
+
+        let resp: UsageResponse = serde_json::from_str(&response.into_string()?)?;
+        Ok(resp)
+    }
+
+    /// 通过标准 billing 接口获取余额（subscription + usage）
+    pub fn get_billing_balance(&self) -> Result<BalanceData, Box<dyn std::error::Error>> {
         if !self.config.enabled || self.config.api_key.is_empty() {
             return Err("API not configured".into());
         }
 
-        let mut request = self
-            .agent
-            .get(&self.config.api_url)
-            .set("Authorization", &format!("Bearer {}", self.config.api_key));
+        let subscription = self.get_subscription()?;
+        let usage = self.get_usage()?;
 
-        if let Some(ref user_id) = self.config.user_id {
-            request = request.set("New-Api-User", user_id);
-        }
-
-        let response = request.call();
-
-        let response = match response {
-            Ok(r) => r,
-            Err(ureq::Error::Status(code, resp)) => {
-                // 尝试解析错误响应中的 message
-                if let Ok(text) = resp.into_string() {
-                    if let Ok(err_resp) = serde_json::from_str::<UserResponse>(&text) {
-                        let msg = err_resp.message.unwrap_or_else(|| format!("HTTP {}", code));
-                        return Err(msg.into());
-                    }
-                }
-                return Err(format!("HTTP {}", code).into());
-            }
-            Err(e) => return Err(e.into()),
-        };
-
-        let resp: UserResponse = serde_json::from_str(&response.into_string()?)?;
-
-        if !resp.success {
-            return Err(resp
-                .message
-                .unwrap_or_else(|| "Unknown error".to_string())
-                .into());
-        }
-
-        resp.data.ok_or_else(|| "No data in response".into())
-    }
-
-    pub fn get_balance(&self) -> Result<BalanceData, Box<dyn std::error::Error>> {
-        let user_data = self.get_user_data()?;
-        Ok(BalanceData::from_user_data(&user_data))
+        Ok(BalanceData::from_billing(&subscription, &usage))
     }
 }

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -77,4 +78,82 @@ fn get_oauth_token_file() -> Option<String> {
 fn get_credentials_path() -> Option<PathBuf> {
     let home = dirs::home_dir()?;
     Some(home.join(".claude").join(".credentials.json"))
+}
+
+// ── Claude Code settings (API Key + Base URL) ──────────────────────────────
+
+#[derive(Debug, Deserialize)]
+struct ClaudeSettings {
+    #[serde(default)]
+    env: HashMap<String, String>,
+}
+
+/// 从 Claude Code settings 文件读取 env 块
+/// 优先级：settings.local.json > settings.json > 系统环境变量
+fn read_settings_env() -> HashMap<String, String> {
+    let home = match dirs::home_dir() {
+        Some(h) => h,
+        None => return HashMap::new(),
+    };
+    let claude_dir = home.join(".claude");
+
+    let mut merged: HashMap<String, String> = HashMap::new();
+
+    // 先读 settings.json，再读 settings.local.json（后者覆盖前者）
+    for filename in &["settings.json", "settings.local.json"] {
+        let path = claude_dir.join(filename);
+        if let Ok(content) = std::fs::read_to_string(&path) {
+            if let Ok(s) = serde_json::from_str::<ClaudeSettings>(&content) {
+                merged.extend(s.env);
+            }
+        }
+    }
+
+    merged
+}
+
+/// 读取用于 API 调用的 API Key
+/// 优先级：settings.local.json > settings.json > 系统环境变量
+pub fn get_api_key() -> Option<String> {
+    let env = read_settings_env();
+
+    // ANTHROPIC_AUTH_TOKEN 和 ANTHROPIC_API_KEY 都支持
+    for key in &["ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_API_KEY"] {
+        if let Some(v) = env.get(*key) {
+            if !v.is_empty() {
+                return Some(v.clone());
+            }
+        }
+    }
+
+    // 系统环境变量兜底
+    for key in &["ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_API_KEY"] {
+        if let Ok(v) = std::env::var(key) {
+            if !v.is_empty() {
+                return Some(v);
+            }
+        }
+    }
+
+    None
+}
+
+/// 读取 API Base URL（中转站地址）
+/// 优先级：settings.local.json > settings.json > 系统环境变量
+pub fn get_api_base_url() -> Option<String> {
+    let env = read_settings_env();
+
+    if let Some(v) = env.get("ANTHROPIC_BASE_URL") {
+        if !v.is_empty() {
+            return Some(v.trim_end_matches('/').to_string());
+        }
+    }
+
+    if let Ok(v) = std::env::var("ANTHROPIC_BASE_URL") {
+        if !v.is_empty() {
+            return Some(v.trim_end_matches('/').to_string());
+        }
+    }
+
+    None
 }

@@ -48,11 +48,7 @@ fn hash_key(value: &str) -> String {
 
 pub fn cache_key(config: &ApiConfig) -> String {
     let mut input = String::new();
-    input.push_str(&config.api_url);
-    input.push('|');
-    if let Some(user_id) = &config.user_id {
-        input.push_str(user_id);
-    }
+    input.push_str(&config.api_base_url);
     input.push('|');
     input.push_str(&config.api_key);
     hash_key(&input)

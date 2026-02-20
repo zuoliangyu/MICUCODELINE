@@ -32,7 +32,6 @@ pub enum MenuResult {
     LaunchConfigurator,
     InitConfig,
     CheckConfig,
-    SetupBalance,
     Exit,
 }
 
@@ -117,7 +116,6 @@ impl MainMenu {
             (" Configuration Mode", "Enter TUI configuration interface"),
             (" Initialize Config", "Create default configuration"),
             (" Check Configuration", "Validate configuration file"),
-            ("💰 Setup Balance API", "Configure balance API credentials"),
             (" About", "Show application information"),
             (" Exit", "Exit MicuCodeLine"),
         ]
@@ -177,12 +175,11 @@ impl MainMenu {
                 }
                 None // Stay in menu
             }
-            3 => Some(MenuResult::SetupBalance),
-            4 => {
+            3 => {
                 self.show_about = true;
                 None // Stay in menu
             }
-            5 => Some(MenuResult::Exit),
+            4 => Some(MenuResult::Exit),
             _ => Some(MenuResult::Exit),
         }
     }

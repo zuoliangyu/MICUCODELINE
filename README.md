@@ -51,12 +51,13 @@ chmod +x ~/.claude/micucodeline/micucodeline
 ```
 或者
 ```json
-  "model": "opus",
-  "statusLine": {
-    "command": "%USERPROFILE%\\.claude\\micucodeline\\micucodeline.exe",
+{
+    "statusLine": {
+    "command": "C:/Users/zuolan/.claude/micucodeline/micucodeline.exe",
     "padding": 0,
     "type": "command"
   }
+}
 ```
 
 > 说明：`micucodeline --init` 只会生成本工具的 `config.toml` 和主题文件，**不会**自动修改 `settings.json`。
@@ -90,7 +91,7 @@ C:\Users\你的用户名\.claude\micucodeline\micucodeline.exe
     "ANTHROPIC_BASE_URL": "https://www.openclaudecode.cn",
   },
   "statusLine": {
-    "command": "%USERPROFILE%\\.claude\\micucodeline\\micucodeline.exe",
+    "command": "C:/Users/zuolan/.claude/micucodeline/micucodeline.exe",
     "padding": 0,
     "type": "command"
   }

@@ -13,7 +13,7 @@ impl BrandingSegment {
 
 impl Segment for BrandingSegment {
     fn collect(&self, _input: &InputData) -> Option<SegmentData> {
-        // 只在有 balance_config.json 时显示（表示使用 OpenClaudeCode）
+        // 只在有 balance_config.json 时显示（表示使用 MicuCodeLine）
         BalanceConfig::load()?;
 
         Some(SegmentData {
