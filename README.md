@@ -12,10 +12,11 @@ MicuCodeLine 是 **MICU OpenClaudeCode 站特供版** Claude Code 状态栏工�
 ![效果预览](https://github.com/zuoliangyu/MICUCODELINE/blob/master/assets/image.png)
 
 ## 功能特性
-- 余额显示：对接 OpenClaudeCode new-api `/api/user/self`
+- 余额自动显示：自动读取 Claude Code settings 中的 API Key 和 Base URL，无需额外配置 JWT 或用户 ID
 - 多主题/交互式 TUI 配置
 - Git/目录/上下文/会话等常用 Segment
 - 跨平台发布（macOS/Linux/Windows）
+- 首次运行自动复制本体到 `~/.claude/micucodeline/`
 
 ## 安装
 
@@ -24,7 +25,7 @@ MicuCodeLine 是 **MICU OpenClaudeCode 站特供版** Claude Code 状态栏工�
 npm install -g @zuolan/micucodeline
 ```
 
-安装后默认路径：`~/.claude/micucodeline/micucodeline`
+安装后自动复制到：`~/.claude/micucodeline/micucodeline`
 
 ### 手动安装（Release）
 ```bash
@@ -38,10 +39,15 @@ chmod +x ~/.claude/micucodeline/micucodeline
 ```
 
 ## Claude Code 配置
-在 `~/.claude/settings.json` 中加入：
+
+在 `~/.claude/settings.json` 中添加 `statusLine` 和 `env`：
 
 ```json
 {
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "你的 API Key（sk-xxx）",
+    "ANTHROPIC_BASE_URL": "https://www.openclaudecode.cn"
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/micucodeline/micucodeline",
@@ -49,10 +55,15 @@ chmod +x ~/.claude/micucodeline/micucodeline
   }
 }
 ```
-或者
+
+Windows 示例：
 ```json
 {
-    "statusLine": {
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "你的 API Key（sk-xxx）",
+    "ANTHROPIC_BASE_URL": "https://www.openclaudecode.cn"
+  },
+  "statusLine": {
     "command": "C:/Users/zuolan/.claude/micucodeline/micucodeline.exe",
     "padding": 0,
     "type": "command"
@@ -60,41 +71,22 @@ chmod +x ~/.claude/micucodeline/micucodeline
 }
 ```
 
-> 说明：`micucodeline --init` 只会生成本工具的 `config.toml` 和主题文件，**不会**自动修改 `settings.json`。
+> 也可以使用 CC Switch 等工具添加 statusLine 配置。
 
-## 余额配置（重要）
+配置好后，MicuCodeLine 会自动从 `settings.json` 的 `env` 中读取 `ANTHROPIC_AUTH_TOKEN` 和 `ANTHROPIC_BASE_URL`，通过 `/api/user/self` 接口自动获取余额，**无需额外配置 JWT 或用户 ID**。
 
+## 高级配置（可选）
 
-**无论是通过 npm 安装还是手动安装，安装完成后都必须先运行配置工具：**
+如果你的 API Key 设置了无限额度（余额显示 ∞），可以额外配置用户 Access Token 来显示真实账户余额：
 
-```bash
-# Linux/macOS
-~/.claude/micucodeline/micucodeline
-
-# Windows
-C:\Users\你的用户名\.claude\micucodeline\micucodeline.exe
-```
-
-运行后会进入交互式配置界面，按照提示输入：
-1. **API Token（系统访问令牌）**：在 OpenClaudeCode 控制台 → 左上角个人设置 → 安全设置 → 系统访问令牌 → 生成令牌
-2. **用户 ID**：在个人设置页面，用户名称下方显示的 ID
-
-![配置参考图](https://github.com/zuoliangyu/MICUCODELINE/blob/master/assets/image2.png)
-
-在 `~/.claude/settings.json` 的 `env` 中添加以下变量：
-或者直接用CC Swich也行就是添加一下statusLine
-示例：
+在 `~/.claude/micucodeline/balance_config.json` 中：
 ```json
 {
-  "env": {
-    "ANTHROPIC_AUTH_TOKEN": "xxx",
-    "ANTHROPIC_BASE_URL": "https://www.openclaudecode.cn",
-  },
-  "statusLine": {
-    "command": "C:/Users/zuolan/.claude/micucodeline/micucodeline.exe",
-    "padding": 0,
-    "type": "command"
-  }
+  "api_key": "你的 API Key",
+  "access_token": "你的 Access Token（从 new-api 个人中心获取）",
+  "new_api_user_id": 12345,
+  "exchange_rate": 7.3,
+  "quota_per_unit": 500000.0
 }
 ```
 
