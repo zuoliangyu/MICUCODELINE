@@ -1,6 +1,6 @@
 use micucodeline::cli::Cli;
 use micucodeline::config::{Config, InputData};
-use micucodeline::core::{collect_all_segments, StatusLineGenerator};
+use micucodeline::core::{StatusLineGenerator, collect_all_segments};
 use std::io::{self, IsTerminal};
 
 /// 自动将可执行文件复制到 ~/.claude/micucodeline/ 目录

@@ -1,12 +1,12 @@
 use crate::config::AnsiColor;
 use ratatui::{
+    Frame,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     widgets::{
         Block, Borders, Clear, ListState, Paragraph, Scrollbar, ScrollbarOrientation,
         ScrollbarState,
     },
-    Frame,
 };
 
 #[derive(Debug, Clone, Copy)]

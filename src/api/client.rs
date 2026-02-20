@@ -1,6 +1,4 @@
-use super::{
-    ApiConfig, BalanceData, SubscriptionResponse, UsageResponse, UserSelfApiResponse,
-};
+use super::{ApiConfig, BalanceData, SubscriptionResponse, UsageResponse, UserSelfApiResponse};
 use std::time::Duration;
 
 const TIMEOUT_SECS: u64 = 5;

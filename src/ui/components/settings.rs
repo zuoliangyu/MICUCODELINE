@@ -1,11 +1,11 @@
 use super::segment_list::{FieldSelection, Panel};
 use crate::config::{Config, SegmentId, StyleMode};
 use ratatui::{
+    Frame,
     layout::Rect,
     style::{Color, Style},
     text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph},
-    Frame,
 };
 
 #[derive(Default)]

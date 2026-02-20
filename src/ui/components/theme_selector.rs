@@ -1,8 +1,8 @@
 use crate::config::Config;
 use ratatui::{
+    Frame,
     layout::Rect,
     widgets::{Block, Borders, Paragraph},
-    Frame,
 };
 
 #[derive(Default)]

@@ -1,10 +1,10 @@
 use crate::config::{Config, SegmentId};
 use ratatui::{
+    Frame,
     layout::Rect,
     style::{Color, Style},
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem},
-    Frame,
 };
 
 #[derive(Debug, Clone, PartialEq)]

@@ -1,11 +1,11 @@
 use crate::config::{Config, SegmentId};
-use crate::core::segments::SegmentData;
 use crate::core::StatusLineGenerator;
+use crate::core::segments::SegmentData;
 use ratatui::{
+    Frame,
     layout::Rect,
     text::{Line, Text},
     widgets::{Block, Borders, Paragraph},
-    Frame,
 };
 use std::collections::HashMap;
 

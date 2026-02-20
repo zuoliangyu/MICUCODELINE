@@ -160,11 +160,7 @@ impl GitSegment {
 
         if output.status.success() {
             let sha = String::from_utf8(output.stdout).ok()?.trim().to_string();
-            if sha.is_empty() {
-                None
-            } else {
-                Some(sha)
-            }
+            if sha.is_empty() { None } else { Some(sha) }
         } else {
             None
         }
