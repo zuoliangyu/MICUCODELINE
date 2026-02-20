@@ -149,34 +149,28 @@ try {
     console.log('✨ MicuCodeLine is ready for Claude Code!');
     console.log(`📍 Location: ${targetPath}`);
     console.log('');
+  }
 
-    // Auto-run configuration if this is a global install
-    const isGlobalInstall = process.env.npm_config_global === 'true';
+  // 自动运行 --init 初始化配置（同时触发 auto_install）
+  try {
+    const { spawnSync } = require('child_process');
+    const result = spawnSync(targetPath, ['--init'], {
+      stdio: silent ? 'ignore' : 'inherit',
+      shell: false,
+      timeout: 10000
+    });
 
-    if (isGlobalInstall && process.stdin.isTTY) {
-      console.log('🔧 Starting first-time setup...');
-      console.log('');
-
-      try {
-        const { spawnSync } = require('child_process');
-        const result = spawnSync(targetPath, [], {
-          stdio: 'inherit',
-          shell: true
-        });
-
-        if (result.status === 0) {
-          console.log('');
-          console.log('✅ Setup completed!');
-          console.log('🎉 You can now use: micucodeline --help');
-        }
-      } catch (error) {
-        console.log('');
-        console.log('⚠️  Could not auto-run setup.');
-        console.log(`💡 Please run manually: ${targetPath}`);
-      }
-    } else {
-      console.log('🎉 You can now use: micucodeline --help');
+    if (!silent && result.status === 0) {
+      console.log('✅ Configuration initialized!');
     }
+  } catch (error) {
+    if (!silent) {
+      console.log('⚠️  Could not auto-initialize. Run manually: micucodeline --init');
+    }
+  }
+
+  if (!silent) {
+    console.log('🎉 You can now use: micucodeline --help');
   }
 } catch (error) {
   // Silent failure - don't break installation
