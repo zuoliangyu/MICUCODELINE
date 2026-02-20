@@ -73,22 +73,7 @@ Windows 示例：
 
 > 也可以使用 CC Switch 等工具添加 statusLine 配置。
 
-配置好后，MicuCodeLine 会自动从 `settings.json` 的 `env` 中读取 `ANTHROPIC_AUTH_TOKEN` 和 `ANTHROPIC_BASE_URL`，通过 `/api/user/self` 接口自动获取余额，**无需额外配置 JWT 或用户 ID**。
-
-## 高级配置（可选）
-
-如果你的 API Key 设置了无限额度（余额显示 ∞），可以额外配置用户 Access Token 来显示真实账户余额：
-
-在 `~/.claude/micucodeline/balance_config.json` 中：
-```json
-{
-  "api_key": "你的 API Key",
-  "access_token": "你的 Access Token（从 new-api 个人中心获取）",
-  "new_api_user_id": 12345,
-  "exchange_rate": 7.3,
-  "quota_per_unit": 500000.0
-}
-```
+配置好后，MicuCodeLine 会自动从 `settings.json` 的 `env` 中读取 `ANTHROPIC_AUTH_TOKEN` 和 `ANTHROPIC_BASE_URL`，通过 `/api/user/self` 接口自动获取用户真实余额，**无需额外配置**。
 
 ## 使用方式
 ```bash
