@@ -45,14 +45,14 @@ impl ModelConfig {
         ];
 
         for path in config_paths.iter().flatten() {
-            if path.exists() {
-                if let Ok(config) = Self::load_from_file(path) {
-                    // Prepend external models to built-in ones for priority
-                    let mut merged_entries = config.model_entries;
-                    merged_entries.extend(model_config.model_entries);
-                    model_config.model_entries = merged_entries;
-                    return model_config;
-                }
+            if path.exists()
+                && let Ok(config) = Self::load_from_file(path)
+            {
+                // Prepend external models to built-in ones for priority
+                let mut merged_entries = config.model_entries;
+                merged_entries.extend(model_config.model_entries);
+                model_config.model_entries = merged_entries;
+                return model_config;
             }
         }
 

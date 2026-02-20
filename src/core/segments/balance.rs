@@ -58,24 +58,21 @@ impl BalanceSegment {
         // 1. 优先：如果配置了 access_token + user_id，用它查真实余额
         //    适用于 API Key 设了无限额度的情况
         let balance_config = BalanceConfig::load();
-        if let Some(ref bc) = balance_config {
-            if let (Some(access_token), Some(user_id)) = (&bc.access_token, bc.new_api_user_id) {
-                let quota_per_unit = bc.quota_per_unit.unwrap_or(500_000.0);
-                let exchange_rate = bc.exchange_rate.unwrap_or(7.3);
-                if let Ok(balance) = client.get_user_self_balance(
-                    access_token,
-                    user_id,
-                    quota_per_unit,
-                    exchange_rate,
-                ) {
-                    cache::set_in_memory_balance(&cache_key, &balance);
-                    let _ = cache::save_cached_balance(&cache_key, &balance);
-                    return Ok(Some(SegmentData {
-                        primary: balance.format_display(),
-                        secondary: String::new(),
-                        metadata: HashMap::new(),
-                    }));
-                }
+        if let Some(ref bc) = balance_config
+            && let (Some(access_token), Some(user_id)) = (&bc.access_token, bc.new_api_user_id)
+        {
+            let quota_per_unit = bc.quota_per_unit.unwrap_or(500_000.0);
+            let exchange_rate = bc.exchange_rate.unwrap_or(7.3);
+            if let Ok(balance) =
+                client.get_user_self_balance(access_token, user_id, quota_per_unit, exchange_rate)
+            {
+                cache::set_in_memory_balance(&cache_key, &balance);
+                let _ = cache::save_cached_balance(&cache_key, &balance);
+                return Ok(Some(SegmentData {
+                    primary: balance.format_display(),
+                    secondary: String::new(),
+                    metadata: HashMap::new(),
+                }));
             }
         }
 

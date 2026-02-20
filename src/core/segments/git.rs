@@ -78,12 +78,11 @@ impl GitSegment {
             .args(["--no-optional-locks", "branch", "--show-current"])
             .current_dir(working_dir)
             .output()
+            && output.status.success()
         {
-            if output.status.success() {
-                let branch = String::from_utf8(output.stdout).ok()?.trim().to_string();
-                if !branch.is_empty() {
-                    return Some(branch);
-                }
+            let branch = String::from_utf8(output.stdout).ok()?.trim().to_string();
+            if !branch.is_empty() {
+                return Some(branch);
             }
         }
 
@@ -91,12 +90,11 @@ impl GitSegment {
             .args(["--no-optional-locks", "symbolic-ref", "--short", "HEAD"])
             .current_dir(working_dir)
             .output()
+            && output.status.success()
         {
-            if output.status.success() {
-                let branch = String::from_utf8(output.stdout).ok()?.trim().to_string();
-                if !branch.is_empty() {
-                    return Some(branch);
-                }
+            let branch = String::from_utf8(output.stdout).ok()?.trim().to_string();
+            if !branch.is_empty() {
+                return Some(branch);
             }
         }
 

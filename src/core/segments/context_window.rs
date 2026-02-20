@@ -92,10 +92,10 @@ fn parse_transcript_usage<P: AsRef<Path>>(transcript_path: P) -> Option<u32> {
     }
 
     // If file doesn't exist, try to find usage from project history
-    if !path.exists() {
-        if let Some(usage) = try_find_usage_from_project_history(path) {
-            return Some(usage);
-        }
+    if !path.exists()
+        && let Some(usage) = try_find_usage_from_project_history(path)
+    {
+        return Some(usage);
     }
 
     None
@@ -115,13 +115,13 @@ fn try_parse_transcript_file(path: &Path) -> Option<u32> {
 
     // Check if the last line is a summary
     let last_line = lines.last()?.trim();
-    if let Ok(entry) = serde_json::from_str::<TranscriptEntry>(last_line) {
-        if entry.r#type.as_deref() == Some("summary") {
-            // Handle summary case: find usage by leafUuid
-            if let Some(leaf_uuid) = &entry.leaf_uuid {
-                let project_dir = path.parent()?;
-                return find_usage_by_leaf_uuid(leaf_uuid, project_dir);
-            }
+    if let Ok(entry) = serde_json::from_str::<TranscriptEntry>(last_line)
+        && entry.r#type.as_deref() == Some("summary")
+    {
+        // Handle summary case: find usage by leafUuid
+        if let Some(leaf_uuid) = &entry.leaf_uuid {
+            let project_dir = path.parent()?;
+            return find_usage_by_leaf_uuid(leaf_uuid, project_dir);
         }
     }
 
@@ -132,15 +132,13 @@ fn try_parse_transcript_file(path: &Path) -> Option<u32> {
             continue;
         }
 
-        if let Ok(entry) = serde_json::from_str::<TranscriptEntry>(line) {
-            if entry.r#type.as_deref() == Some("assistant") {
-                if let Some(message) = &entry.message {
-                    if let Some(raw_usage) = &message.usage {
-                        let normalized = raw_usage.clone().normalize();
-                        return Some(normalized.display_tokens());
-                    }
-                }
-            }
+        if let Ok(entry) = serde_json::from_str::<TranscriptEntry>(line)
+            && entry.r#type.as_deref() == Some("assistant")
+            && let Some(message) = &entry.message
+            && let Some(raw_usage) = &message.usage
+        {
+            let normalized = raw_usage.clone().normalize();
+            return Some(normalized.display_tokens());
         }
     }
 
@@ -182,27 +180,26 @@ fn search_uuid_in_file(path: &Path, target_uuid: &str) -> Option<u32> {
             continue;
         }
 
-        if let Ok(entry) = serde_json::from_str::<TranscriptEntry>(line) {
-            if let Some(uuid) = &entry.uuid {
-                if uuid == target_uuid {
-                    // Found the target message, check its type
-                    if entry.r#type.as_deref() == Some("assistant") {
-                        // Direct assistant message with usage
-                        if let Some(message) = &entry.message {
-                            if let Some(raw_usage) = &message.usage {
-                                let normalized = raw_usage.clone().normalize();
-                                return Some(normalized.display_tokens());
-                            }
-                        }
-                    } else if entry.r#type.as_deref() == Some("user") {
-                        // User message, need to find the parent assistant message
-                        if let Some(parent_uuid) = &entry.parent_uuid {
-                            return find_assistant_message_by_uuid(&lines, parent_uuid);
-                        }
-                    }
-                    break;
+        if let Ok(entry) = serde_json::from_str::<TranscriptEntry>(line)
+            && let Some(uuid) = &entry.uuid
+            && uuid == target_uuid
+        {
+            // Found the target message, check its type
+            if entry.r#type.as_deref() == Some("assistant") {
+                // Direct assistant message with usage
+                if let Some(message) = &entry.message
+                    && let Some(raw_usage) = &message.usage
+                {
+                    let normalized = raw_usage.clone().normalize();
+                    return Some(normalized.display_tokens());
+                }
+            } else if entry.r#type.as_deref() == Some("user") {
+                // User message, need to find the parent assistant message
+                if let Some(parent_uuid) = &entry.parent_uuid {
+                    return find_assistant_message_by_uuid(&lines, parent_uuid);
                 }
             }
+            break;
         }
     }
 
@@ -216,17 +213,15 @@ fn find_assistant_message_by_uuid(lines: &[String], target_uuid: &str) -> Option
             continue;
         }
 
-        if let Ok(entry) = serde_json::from_str::<TranscriptEntry>(line) {
-            if let Some(uuid) = &entry.uuid {
-                if uuid == target_uuid && entry.r#type.as_deref() == Some("assistant") {
-                    if let Some(message) = &entry.message {
-                        if let Some(raw_usage) = &message.usage {
-                            let normalized = raw_usage.clone().normalize();
-                            return Some(normalized.display_tokens());
-                        }
-                    }
-                }
-            }
+        if let Ok(entry) = serde_json::from_str::<TranscriptEntry>(line)
+            && let Some(uuid) = &entry.uuid
+            && uuid == target_uuid
+            && entry.r#type.as_deref() == Some("assistant")
+            && let Some(message) = &entry.message
+            && let Some(raw_usage) = &message.usage
+        {
+            let normalized = raw_usage.clone().normalize();
+            return Some(normalized.display_tokens());
         }
     }
 

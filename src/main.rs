@@ -49,17 +49,14 @@ fn auto_install() {
         true
     };
 
-    if should_copy {
-        if std::fs::copy(&current_exe, &target_path).is_ok() {
-            // 在 Unix 系统上设置可执行权限
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                let _ =
-                    std::fs::set_permissions(&target_path, std::fs::Permissions::from_mode(0o755));
-            }
-            eprintln!("✅ 已自动安装到: {}", target_path.display());
+    if should_copy && std::fs::copy(&current_exe, &target_path).is_ok() {
+        // 在 Unix 系统上设置可执行权限
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = std::fs::set_permissions(&target_path, std::fs::Permissions::from_mode(0o755));
         }
+        eprintln!("✅ 已自动安装到: {}", target_path.display());
     }
 }
 

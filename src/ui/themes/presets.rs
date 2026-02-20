@@ -94,12 +94,12 @@ impl ThemePresets {
         // Add custom themes from file system
         if let Ok(themes_dir) = std::fs::read_dir(Self::get_themes_path()) {
             for entry in themes_dir.flatten() {
-                if let Some(name) = entry.file_name().to_str() {
-                    if name.ends_with(".toml") {
-                        let theme_name = name.trim_end_matches(".toml").to_string();
-                        if !themes.contains(&theme_name) {
-                            themes.push(theme_name);
-                        }
+                if let Some(name) = entry.file_name().to_str()
+                    && name.ends_with(".toml")
+                {
+                    let theme_name = name.trim_end_matches(".toml").to_string();
+                    if !themes.contains(&theme_name) {
+                        themes.push(theme_name);
                     }
                 }
             }

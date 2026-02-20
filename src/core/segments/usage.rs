@@ -48,19 +48,19 @@ impl UsageSegment {
     }
 
     fn format_reset_time(reset_time_str: Option<&str>) -> String {
-        if let Some(time_str) = reset_time_str {
-            if let Ok(dt) = DateTime::parse_from_rfc3339(time_str) {
-                let mut local_dt = dt.with_timezone(&Local);
-                if local_dt.minute() > 45 {
-                    local_dt += Duration::hours(1);
-                }
-                return format!(
-                    "{}-{}-{}",
-                    local_dt.month(),
-                    local_dt.day(),
-                    local_dt.hour()
-                );
+        if let Some(time_str) = reset_time_str
+            && let Ok(dt) = DateTime::parse_from_rfc3339(time_str)
+        {
+            let mut local_dt = dt.with_timezone(&Local);
+            if local_dt.minute() > 45 {
+                local_dt += Duration::hours(1);
             }
+            return format!(
+                "{}-{}-{}",
+                local_dt.month(),
+                local_dt.day(),
+                local_dt.hour()
+            );
         }
         "?".to_string()
     }
@@ -155,10 +155,10 @@ impl UsageSegment {
         let mut agent_builder = ureq::AgentBuilder::new();
 
         // Configure proxy from Claude settings if available
-        if let Some(proxy_url) = Self::get_proxy_from_settings() {
-            if let Ok(proxy) = ureq::Proxy::new(&proxy_url) {
-                agent_builder = agent_builder.proxy(proxy);
-            }
+        if let Some(proxy_url) = Self::get_proxy_from_settings()
+            && let Ok(proxy) = ureq::Proxy::new(&proxy_url)
+        {
+            agent_builder = agent_builder.proxy(proxy);
         }
 
         let agent = agent_builder.build();

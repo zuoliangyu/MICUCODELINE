@@ -3,21 +3,11 @@ pub mod client;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ApiConfig {
     pub enabled: bool,
     pub api_key: String,
     pub api_base_url: String,
-}
-
-impl Default for ApiConfig {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            api_key: String::new(),
-            api_base_url: String::new(),
-        }
-    }
 }
 
 /// /api/user/self 响应中的用户数据

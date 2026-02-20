@@ -48,10 +48,10 @@ fn get_oauth_token_macos() -> Option<String> {
     match output {
         Ok(output) if output.status.success() => {
             let json_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
-            if !json_str.is_empty() {
-                if let Ok(creds_file) = serde_json::from_str::<CredentialsFile>(&json_str) {
-                    return creds_file.claude_ai_oauth.map(|oauth| oauth.access_token);
-                }
+            if !json_str.is_empty()
+                && let Ok(creds_file) = serde_json::from_str::<CredentialsFile>(&json_str)
+            {
+                return creds_file.claude_ai_oauth.map(|oauth| oauth.access_token);
             }
             None
         }
@@ -102,10 +102,10 @@ fn read_settings_env() -> HashMap<String, String> {
     // 先读 settings.json，再读 settings.local.json（后者覆盖前者）
     for filename in &["settings.json", "settings.local.json"] {
         let path = claude_dir.join(filename);
-        if let Ok(content) = std::fs::read_to_string(&path) {
-            if let Ok(s) = serde_json::from_str::<ClaudeSettings>(&content) {
-                merged.extend(s.env);
-            }
+        if let Ok(content) = std::fs::read_to_string(&path)
+            && let Ok(s) = serde_json::from_str::<ClaudeSettings>(&content)
+        {
+            merged.extend(s.env);
         }
     }
 
@@ -119,19 +119,19 @@ pub fn get_api_key() -> Option<String> {
 
     // ANTHROPIC_AUTH_TOKEN 和 ANTHROPIC_API_KEY 都支持
     for key in &["ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_API_KEY"] {
-        if let Some(v) = env.get(*key) {
-            if !v.is_empty() {
-                return Some(v.clone());
-            }
+        if let Some(v) = env.get(*key)
+            && !v.is_empty()
+        {
+            return Some(v.clone());
         }
     }
 
     // 系统环境变量兜底
     for key in &["ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_API_KEY"] {
-        if let Ok(v) = std::env::var(key) {
-            if !v.is_empty() {
-                return Some(v);
-            }
+        if let Ok(v) = std::env::var(key)
+            && !v.is_empty()
+        {
+            return Some(v);
         }
     }
 
@@ -143,16 +143,16 @@ pub fn get_api_key() -> Option<String> {
 pub fn get_api_base_url() -> Option<String> {
     let env = read_settings_env();
 
-    if let Some(v) = env.get("ANTHROPIC_BASE_URL") {
-        if !v.is_empty() {
-            return Some(v.trim_end_matches('/').to_string());
-        }
+    if let Some(v) = env.get("ANTHROPIC_BASE_URL")
+        && !v.is_empty()
+    {
+        return Some(v.trim_end_matches('/').to_string());
     }
 
-    if let Ok(v) = std::env::var("ANTHROPIC_BASE_URL") {
-        if !v.is_empty() {
-            return Some(v.trim_end_matches('/').to_string());
-        }
+    if let Ok(v) = std::env::var("ANTHROPIC_BASE_URL")
+        && !v.is_empty()
+    {
+        return Some(v.trim_end_matches('/').to_string());
     }
 
     None

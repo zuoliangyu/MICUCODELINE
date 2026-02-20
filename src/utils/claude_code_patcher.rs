@@ -569,10 +569,10 @@ impl ClaudeCodePatcher {
         // Find the last occurrence (closest to anchor)
         let mut last_match: Option<(usize, &str)> = None;
         for mat in pattern.find_iter(backward_text) {
-            if let Some(captures) = pattern.captures(mat.as_str()) {
-                if let Some(var) = captures.get(1) {
-                    last_match = Some((mat.start(), var.as_str()));
-                }
+            if let Some(captures) = pattern.captures(mat.as_str())
+                && let Some(var) = captures.get(1)
+            {
+                last_match = Some((mat.start(), var.as_str()));
             }
         }
 

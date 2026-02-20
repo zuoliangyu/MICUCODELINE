@@ -78,10 +78,10 @@ impl StatusLineGenerator {
         // Use the same generate method and convert to TUI
         let full_output = self.generate(segments);
 
-        if let Ok(text) = full_output.into_text() {
-            if let Some(line) = text.lines.into_iter().next() {
-                return line;
-            }
+        if let Ok(text) = full_output.into_text()
+            && let Some(line) = text.lines.into_iter().next()
+        {
+            return line;
         }
 
         // Fallback to raw text

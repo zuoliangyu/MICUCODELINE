@@ -75,12 +75,12 @@ impl App {
         let mut config = Config::load().unwrap_or_else(|_| Config::default());
 
         // If a theme is specified, reload it to get the latest changes
-        if !config.theme.is_empty() && config.theme != "default" {
-            if let Ok(theme_config) =
+        if !config.theme.is_empty()
+            && config.theme != "default"
+            && let Ok(theme_config) =
                 crate::ui::themes::ThemePresets::load_theme_from_file(&config.theme)
-            {
-                config = theme_config;
-            }
+        {
+            config = theme_config;
         }
 
         // Terminal setup
