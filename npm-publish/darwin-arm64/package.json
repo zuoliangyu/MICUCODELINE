@@ -1,6 +1,6 @@
 {
   "name": "@zuolan/micucodeline-darwin-arm64",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "macdarwin ARM64 binary for MicuCodeLine",
   "files": [
     "micucodeline"
@@ -15,6 +15,6 @@
     "type": "git",
     "url": "https://github.com/zuoliangyu/MICUCODELINE"
   },
-  "author": "Haleclipse",
+  "author": "zuolan",
   "license": "MIT"
 }

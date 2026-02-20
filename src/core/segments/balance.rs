@@ -59,7 +59,7 @@ impl BalanceSegment {
         //    适用于 API Key 设了无限额度的情况
         let balance_config = BalanceConfig::load();
         if let Some(ref bc) = balance_config {
-            if let (Some(ref access_token), Some(user_id)) =
+            if let (Some(access_token), Some(user_id)) =
                 (&bc.access_token, bc.new_api_user_id)
             {
                 let quota_per_unit = bc.quota_per_unit.unwrap_or(500_000.0);

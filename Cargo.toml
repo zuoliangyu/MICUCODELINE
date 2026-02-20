@@ -1,9 +1,9 @@
 [package]
 name = "micucodeline"
-version = "1.0.7"
-edition = "2021"
+version = "1.1.0"
+edition = "2024"
 description = "MicuCodeLine (micucodeline) - High-performance Claude Code StatusLine tool written in Rust"
-authors = ["Haleclipse"]
+authors = ["zuolan"]
 license = "MIT"
 repository = "https://github.com/zuoliangyu/MICUCODELINE"
 readme = "README.md"
