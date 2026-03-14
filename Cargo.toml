@@ -1,6 +1,6 @@
 [package]
 name = "micucodeline"
-version = "1.2.0"
+version = "1.3.0"
 edition = "2024"
 description = "MicuCodeLine (micucodeline) - High-performance Claude Code StatusLine tool written in Rust"
 authors = ["zuolan"]
@@ -27,6 +27,8 @@ semver = { version = "1.0", optional = true }
 chrono = { version = "0.4", features = ["serde"], optional = true }
 dirs = { version = "5.0", optional = true }
 regex = "1.0"
+unicode-width = "0.2"
+terminal_size = "0.4"
 
 
 

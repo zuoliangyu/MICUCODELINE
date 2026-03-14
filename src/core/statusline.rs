@@ -1,9 +1,11 @@
 use crate::config::{AnsiColor, Config, SegmentConfig, StyleMode};
 use crate::core::segments::SegmentData;
+use unicode_width::UnicodeWidthChar;
 
-/// Strip ANSI escape sequences and return visible text length
+/// Strip ANSI escape sequences and return visible display width
+/// Correctly handles CJK wide characters (2 columns per character)
 fn visible_width(text: &str) -> usize {
-    let mut visible = String::new();
+    let mut width = 0;
     let mut in_escape = false;
     let mut chars = text.chars().peekable();
 
@@ -21,12 +23,12 @@ fn visible_width(text: &str) -> usize {
                 in_escape = false;
             }
         } else {
-            // Regular character
-            visible.push(ch);
+            // Use unicode width for correct CJK character handling
+            width += ch.width().unwrap_or(0);
         }
     }
 
-    visible.chars().count()
+    width
 }
 
 pub struct StatusLineGenerator {
@@ -63,6 +65,116 @@ impl StatusLineGenerator {
             // For all other separators, use white color and simple join
             self.join_with_white_separators(&output)
         }
+    }
+
+    /// Generate statusline with intelligent wrapping based on terminal width.
+    /// Returns multiple lines if the content exceeds max_width.
+    pub fn generate_wrapped(
+        &self,
+        segments: Vec<(SegmentConfig, SegmentData)>,
+        max_width: usize,
+    ) -> Vec<String> {
+        let mut rendered_segments = Vec::new();
+        let enabled_segments: Vec<_> = segments
+            .into_iter()
+            .filter(|(config, _)| config.enabled)
+            .collect();
+
+        for (config, data) in enabled_segments.iter() {
+            let rendered = self.render_segment(config, data);
+            if !rendered.is_empty() {
+                rendered_segments.push(rendered);
+            }
+        }
+
+        if rendered_segments.is_empty() {
+            return vec![String::new()];
+        }
+
+        // Pre-calculate separators between segments
+        let mut separators = Vec::new();
+        for i in 0..rendered_segments.len().saturating_sub(1) {
+            let separator = if self.config.style.separator == "\u{e0b0}" {
+                let prev_bg = enabled_segments
+                    .get(i)
+                    .and_then(|(config, _)| config.colors.background.as_ref());
+                let curr_bg = enabled_segments
+                    .get(i + 1)
+                    .and_then(|(config, _)| config.colors.background.as_ref());
+                self.create_powerline_arrow(prev_bg, curr_bg)
+            } else {
+                format!("\x1b[37m{}\x1b[0m", self.config.style.separator)
+            };
+            separators.push(separator);
+        }
+
+        // Check if single line fits
+        let full_line = if self.config.style.separator == "\u{e0b0}" {
+            self.join_with_powerline_arrows(&rendered_segments, &enabled_segments)
+        } else {
+            self.join_with_white_separators(&rendered_segments)
+        };
+
+        if visible_width(&full_line) <= max_width {
+            return vec![full_line];
+        }
+
+        // Intelligent line wrapping by segment
+        let mut lines: Vec<String> = Vec::new();
+        let mut current_line = String::new();
+        let mut current_width = 0usize;
+
+        for i in 0..rendered_segments.len() {
+            let segment = &rendered_segments[i];
+            let segment_width = visible_width(segment);
+
+            // Check if adding this segment would exceed max_width
+            if current_width > 0 && current_width + segment_width > max_width {
+                // Add reset before line break to prevent color bleeding
+                current_line.push_str("\x1b[0m");
+                lines.push(current_line.clone());
+                current_line.clear();
+                current_width = 0;
+            }
+
+            // Add the segment to current line
+            current_line.push_str(segment);
+            current_width += segment_width;
+
+            // Handle separator if not the last segment
+            if i < separators.len() {
+                let separator = &separators[i];
+                let separator_width = visible_width(separator);
+
+                if i + 1 < rendered_segments.len() {
+                    let next_segment = &rendered_segments[i + 1];
+                    let next_width = visible_width(next_segment);
+
+                    if current_width + separator_width + next_width <= max_width {
+                        current_line.push_str(separator);
+                        current_width += separator_width;
+                    } else {
+                        // Add reset before line break
+                        current_line.push_str("\x1b[0m");
+                        lines.push(current_line.clone());
+                        current_line.clear();
+                        current_width = 0;
+                    }
+                }
+            }
+        }
+
+        // Add the last line
+        if !current_line.is_empty() {
+            current_line.push_str("\x1b[0m");
+            lines.push(current_line);
+        }
+
+        if lines.is_empty() {
+            lines.push(String::new());
+        }
+
+        lines
     }
 
     /// Generate statusline for TUI preview with proper width calculation
