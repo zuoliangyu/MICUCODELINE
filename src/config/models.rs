@@ -134,37 +134,53 @@ impl Default for ModelConfig {
     fn default() -> Self {
         Self {
             model_entries: vec![
-                // 1M context models (put first for priority matching)
+                // 1M context models — more specific patterns first
                 ModelEntry {
-                    pattern: "[1m]".to_string(),
-                    display_name: "Sonnet 4.5 1M".to_string(),
+                    pattern: "1mopus".to_string(),
+                    display_name: "Opus 4.6 1M".to_string(),
                     context_limit: 1_000_000,
                 },
-                // ModelEntry {
-                //     pattern: "claude-sonnet-4-5".to_string(),
-                //     display_name: "Sonnet 4.5".to_string(),
-                //     context_limit: 200_000,
-                // },
-                // ModelEntry {
-                //     pattern: "claude-sonnet-4".to_string(),
-                //     display_name: "Sonnet 4".to_string(),
-                //     context_limit: 200_000,
-                // },
-                // ModelEntry {
-                //     pattern: "claude-4-sonnet".to_string(),
-                //     display_name: "Sonnet 4".to_string(),
-                //     context_limit: 200_000,
-                // },
-                // ModelEntry {
-                //     pattern: "claude-4-opus".to_string(),
-                //     display_name: "Opus 4".to_string(),
-                //     context_limit: 200_000,
-                // },
-                // ModelEntry {
-                //     pattern: "sonnet-4".to_string(),
-                //     display_name: "Sonnet 4".to_string(),
-                //     context_limit: 200_000,
-                // },
+                ModelEntry {
+                    pattern: "1msonnet".to_string(),
+                    display_name: "Sonnet 4.6 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                ModelEntry {
+                    pattern: "1m".to_string(),
+                    display_name: "Claude 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                // Claude 4.x series — specific version first
+                ModelEntry {
+                    pattern: "opus-4-6".to_string(),
+                    display_name: "Opus 4.6".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "opus-4.6".to_string(),
+                    display_name: "Opus 4.6".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "sonnet-4-6".to_string(),
+                    display_name: "Sonnet 4.6".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "opus-4-5".to_string(),
+                    display_name: "Opus 4.5".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "sonnet-4-5".to_string(),
+                    display_name: "Sonnet 4.5".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "haiku-4-5".to_string(),
+                    display_name: "Haiku 4.5".to_string(),
+                    context_limit: 200_000,
+                },
                 ModelEntry {
                     pattern: "claude-3-7-sonnet".to_string(),
                     display_name: "Sonnet 3.7".to_string(),

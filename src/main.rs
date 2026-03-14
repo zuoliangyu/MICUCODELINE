@@ -1,6 +1,6 @@
 use micucodeline::cli::Cli;
 use micucodeline::config::{Config, InputData};
-use micucodeline::core::{collect_all_segments, StatusLineGenerator};
+use micucodeline::core::{StatusLineGenerator, collect_all_segments};
 use std::io::{self, IsTerminal};
 
 /// Detect terminal width even when stdout/stdin are piped.
