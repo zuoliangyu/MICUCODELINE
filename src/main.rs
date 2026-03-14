@@ -19,26 +19,26 @@ fn detect_terminal_width() -> usize {
     // 3. Open the console/tty directly (works even when all std streams are piped)
     #[cfg(windows)]
     {
-        if let Ok(conout) = std::fs::OpenOptions::new().write(true).open("CONOUT$") {
-            if let Some((w, _)) = terminal_size::terminal_size_of(&conout) {
-                return w.0 as usize;
-            }
+        if let Ok(conout) = std::fs::OpenOptions::new().write(true).open("CONOUT$")
+            && let Some((w, _)) = terminal_size::terminal_size_of(&conout)
+        {
+            return w.0 as usize;
         }
     }
     #[cfg(unix)]
     {
-        if let Ok(tty) = std::fs::File::open("/dev/tty") {
-            if let Some((w, _)) = terminal_size::terminal_size_of(&tty) {
-                return w.0 as usize;
-            }
+        if let Ok(tty) = std::fs::File::open("/dev/tty")
+            && let Some((w, _)) = terminal_size::terminal_size_of(&tty)
+        {
+            return w.0 as usize;
         }
     }
 
     // 4. Check COLUMNS environment variable
-    if let Ok(cols) = std::env::var("COLUMNS") {
-        if let Ok(w) = cols.parse::<usize>() {
-            return w;
-        }
+    if let Ok(cols) = std::env::var("COLUMNS")
+        && let Ok(w) = cols.parse::<usize>()
+    {
+        return w;
     }
 
     // 5. Fallback
