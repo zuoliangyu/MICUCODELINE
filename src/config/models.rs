@@ -135,6 +135,23 @@ impl Default for ModelConfig {
         Self {
             model_entries: vec![
                 // 1M context models — more specific patterns first
+                // Claude Code format: claude-opus-4-6[1m]
+                ModelEntry {
+                    pattern: "opus-4-6[1m]".to_string(),
+                    display_name: "Opus 4.6 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                ModelEntry {
+                    pattern: "opus-4.6[1m]".to_string(),
+                    display_name: "Opus 4.6 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                ModelEntry {
+                    pattern: "sonnet-4-6[1m]".to_string(),
+                    display_name: "Sonnet 4.6 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                // Sub2API proxy format: 1mopus, 1msonnet
                 ModelEntry {
                     pattern: "1mopus".to_string(),
                     display_name: "Opus 4.6 1M".to_string(),
@@ -145,8 +162,9 @@ impl Default for ModelConfig {
                     display_name: "Sonnet 4.6 1M".to_string(),
                     context_limit: 1_000_000,
                 },
+                // Generic 1M fallback
                 ModelEntry {
-                    pattern: "1m".to_string(),
+                    pattern: "[1m]".to_string(),
                     display_name: "Claude 1M".to_string(),
                     context_limit: 1_000_000,
                 },
