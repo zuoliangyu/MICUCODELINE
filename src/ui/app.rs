@@ -66,22 +66,8 @@ impl App {
     }
 
     pub fn run() -> Result<(), Box<dyn std::error::Error>> {
-        // Ensure themes directory and built-in themes exist
-        if let Err(e) = crate::config::loader::ConfigLoader::init_themes() {
-            eprintln!("Warning: Failed to initialize themes: {}", e);
-        }
-
-        // Load config
-        let mut config = Config::load().unwrap_or_else(|_| Config::default());
-
-        // If a theme is specified, reload it to get the latest changes
-        if !config.theme.is_empty()
-            && config.theme != "default"
-            && let Ok(theme_config) =
-                crate::ui::themes::ThemePresets::load_theme_from_file(&config.theme)
-        {
-            config = theme_config;
-        }
+        // Themes are hard-coded; just take the default config in TUI mode.
+        let config = Config::default();
 
         // Terminal setup
         enable_raw_mode()?;
@@ -247,41 +233,9 @@ impl App {
         result
     }
 
-    fn calculate_theme_selector_height(&self, total_width: u16) -> u16 {
-        // Get all available themes dynamically
-        let available_themes = crate::ui::themes::ThemePresets::list_available_themes();
-
-        // Calculate available width (minus borders only)
-        let content_width = total_width.saturating_sub(2); // Remove borders
-
-        // Simulate the line wrapping logic
-        let mut line_count = 1;
-        let mut current_line_length = 0;
-        let mut first_line = true;
-
-        for (i, theme) in available_themes.iter().enumerate() {
-            let marker = if self.config.theme == *theme {
-                "[✓]"
-            } else {
-                "[ ]"
-            };
-            let theme_part = format!("{} {}", marker, theme);
-            let separator = if i == 0 { "" } else { "  " };
-            let part_with_sep = format!("{}{}", separator, theme_part);
-
-            let would_fit = current_line_length + part_with_sep.len() <= content_width as usize;
-
-            if would_fit || first_line {
-                current_line_length += part_with_sep.len();
-                first_line = false;
-            } else {
-                line_count += 1;
-                current_line_length = theme_part.len();
-            }
-        }
-
-        // Return height: content lines + borders (top + bottom)
-        line_count + 2
+    fn calculate_theme_selector_height(&self, _total_width: u16) -> u16 {
+        // Theme is locked: name + separator = 2 lines + borders.
+        4
     }
 
     fn calculate_help_height(&self, total_width: u16) -> u16 {
@@ -506,8 +460,9 @@ impl App {
                         SegmentId::Session => "Session",
                         SegmentId::OutputStyle => "Output Style",
                         SegmentId::Update => "Update",
+                        SegmentId::Used => "Used",
                         SegmentId::Balance => "Balance",
-                        SegmentId::Group => "Group",
+                        SegmentId::Cwd => "Cwd",
                         SegmentId::Branding => "Branding",
                     };
                     let is_enabled = segment.enabled;
@@ -536,8 +491,9 @@ impl App {
                                 SegmentId::Session => "Session",
                                 SegmentId::OutputStyle => "Output Style",
                                 SegmentId::Update => "Update",
+                                SegmentId::Used => "Used",
                                 SegmentId::Balance => "Balance",
-                                SegmentId::Group => "Group",
+                                SegmentId::Cwd => "Cwd",
                                 SegmentId::Branding => "Branding",
                             };
                             let is_enabled = segment.enabled;
@@ -624,14 +580,8 @@ impl App {
     }
 
     fn cycle_theme(&mut self) {
-        let themes = crate::ui::themes::ThemePresets::list_available_themes();
-        let current_theme = &self.config.theme;
-        let current_index = themes.iter().position(|t| t == current_theme).unwrap_or(0);
-        let next_index = (current_index + 1) % themes.len();
-        let next_theme = &themes[next_index];
-
-        self.status_message = Some(format!("Switching to theme: {}", next_theme));
-        self.switch_to_theme(next_theme);
+        // Theme is locked.
+        self.status_message = Some("Theme switching is disabled.".to_string());
     }
 
     fn switch_to_theme(&mut self, theme_name: &str) {
@@ -679,32 +629,14 @@ impl App {
         }
     }
 
-    /// Write current config to the current theme file
+    /// Saving themes is disabled — themes are hard-coded.
     fn write_to_current_theme(&mut self) {
-        let current_theme = &self.config.theme;
-        match crate::ui::themes::ThemePresets::save_theme(current_theme, &self.config) {
-            Ok(_) => {
-                self.status_message = Some(format!("Wrote config to theme: {}", current_theme));
-            }
-            Err(e) => {
-                self.status_message =
-                    Some(format!("Failed to write to theme {}: {}", current_theme, e));
-            }
-        }
+        self.status_message = Some("Themes are hard-coded; saving is disabled.".to_string());
     }
 
-    /// Save current config as a new theme with the given name
-    fn save_as_new_theme(&mut self, theme_name: &str) {
-        match crate::ui::themes::ThemePresets::save_theme(theme_name, &self.config) {
-            Ok(_) => {
-                // Update current theme to the new one
-                self.config.theme = theme_name.to_string();
-                self.status_message = Some(format!("Saved as new theme: {}", theme_name));
-            }
-            Err(e) => {
-                self.status_message = Some(format!("Failed to save theme {}: {}", theme_name, e));
-            }
-        }
+    /// Saving new themes is disabled — themes are hard-coded.
+    fn save_as_new_theme(&mut self, _theme_name: &str) {
+        self.status_message = Some("Themes are hard-coded; saving is disabled.".to_string());
     }
 
     /// Open separator editor with current separator

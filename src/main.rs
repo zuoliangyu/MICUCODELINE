@@ -27,10 +27,10 @@ fn detect_terminal_width() -> usize {
     }
     #[cfg(unix)]
     {
-        if let Ok(tty) = std::fs::File::open("/dev/tty")
-            && let Some((w, _)) = terminal_size::terminal_size_of(&tty)
-        {
-            return w.0 as usize;
+        if let Ok(tty) = std::fs::File::open("/dev/tty") {
+            if let Some((w, _)) = terminal_size::terminal_size_of(&tty) {
+                return w.0 as usize;
+            }
         }
     }
 
@@ -121,13 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     if cli.print {
-        let mut config = Config::load().unwrap_or_else(|_| Config::default());
-
-        // Apply theme override if provided
-        if let Some(theme) = cli.theme {
-            config = micucodeline::ui::themes::ThemePresets::get_theme(&theme);
-        }
-
+        let config = Config::load().unwrap_or_else(|_| Config::default());
         config.print()?;
         return Ok(());
     }
@@ -190,13 +184,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    // Load configuration
-    let mut config = Config::load().unwrap_or_else(|_| Config::default());
-
-    // Apply theme override if provided
-    if let Some(theme) = cli.theme {
-        config = micucodeline::ui::themes::ThemePresets::get_theme(&theme);
-    }
+    // Load configuration (single hard-coded theme)
+    let config = Config::load().unwrap_or_else(|_| Config::default());
 
     // Check if stdin has data
     if io::stdin().is_terminal() {

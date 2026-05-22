@@ -183,18 +183,23 @@ impl PreviewComponent {
                         map
                     },
                 },
-                SegmentId::Balance => SegmentData {
-                    primary: "¥125.02".to_string(),
+                SegmentId::Used => SegmentData {
+                    primary: "已用:$12.48".to_string(),
                     secondary: "".to_string(),
                     metadata: HashMap::new(),
                 },
-                SegmentId::Group => SegmentData {
-                    primary: "C1-青铜背带裤".to_string(),
+                SegmentId::Balance => SegmentData {
+                    primary: "余额:$137.52".to_string(),
+                    secondary: "".to_string(),
+                    metadata: HashMap::new(),
+                },
+                SegmentId::Cwd => SegmentData {
+                    primary: "~/work/micu".to_string(),
                     secondary: "".to_string(),
                     metadata: HashMap::new(),
                 },
                 SegmentId::Branding => SegmentData {
-                    primary: "MicuCode".to_string(),
+                    primary: String::new(),
                     secondary: "".to_string(),
                     metadata: HashMap::new(),
                 },

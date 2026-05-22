@@ -321,11 +321,11 @@ pub mod github {
             // Parse glibc version (format: "ldd (GNU libc) 2.35")
             for line in version_output.lines() {
                 if line.contains("GNU libc") || line.contains("GLIBC") {
-                    if let Some(version_part) = line.split_whitespace().last()
-                        && let Some((major, minor)) = parse_version(version_part)
-                    {
-                        // Use dynamic binary if glibc >= 2.35, otherwise use static
-                        return major < 2 || (major == 2 && minor < 35);
+                    if let Some(version_part) = line.split_whitespace().last() {
+                        if let Some((major, minor)) = parse_version(version_part) {
+                            // Use dynamic binary if glibc >= 2.35, otherwise use static
+                            return major < 2 || (major == 2 && minor < 35);
+                        }
                     }
                     break;
                 }
@@ -340,10 +340,10 @@ pub mod github {
     #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
     fn parse_version(version: &str) -> Option<(u32, u32)> {
         let parts: Vec<&str> = version.split('.').collect();
-        if parts.len() >= 2
-            && let (Ok(major), Ok(minor)) = (parts[0].parse::<u32>(), parts[1].parse::<u32>())
-        {
-            return Some((major, minor));
+        if parts.len() >= 2 {
+            if let (Ok(major), Ok(minor)) = (parts[0].parse::<u32>(), parts[1].parse::<u32>()) {
+                return Some((major, minor));
+            }
         }
         None
     }

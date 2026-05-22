@@ -135,6 +135,32 @@ impl Default for ModelConfig {
         Self {
             model_entries: vec![
                 // 1M context models — more specific patterns first
+                // Claude Code format: claude-opus-4-7[1m]
+                ModelEntry {
+                    pattern: "opus-4-7[1m]".to_string(),
+                    display_name: "Opus 4.7 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                ModelEntry {
+                    pattern: "opus-4.7[1m]".to_string(),
+                    display_name: "Opus 4.7 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                ModelEntry {
+                    pattern: "sonnet-4-7[1m]".to_string(),
+                    display_name: "Sonnet 4.7 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                ModelEntry {
+                    pattern: "sonnet-4.7[1m]".to_string(),
+                    display_name: "Sonnet 4.7 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
+                ModelEntry {
+                    pattern: "haiku-4-7[1m]".to_string(),
+                    display_name: "Haiku 4.7 1M".to_string(),
+                    context_limit: 1_000_000,
+                },
                 // Claude Code format: claude-opus-4-6[1m]
                 ModelEntry {
                     pattern: "opus-4-6[1m]".to_string(),
@@ -169,6 +195,31 @@ impl Default for ModelConfig {
                     context_limit: 1_000_000,
                 },
                 // Claude 4.x series — specific version first
+                ModelEntry {
+                    pattern: "opus-4-7".to_string(),
+                    display_name: "Opus 4.7".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "opus-4.7".to_string(),
+                    display_name: "Opus 4.7".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "sonnet-4-7".to_string(),
+                    display_name: "Sonnet 4.7".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "sonnet-4.7".to_string(),
+                    display_name: "Sonnet 4.7".to_string(),
+                    context_limit: 200_000,
+                },
+                ModelEntry {
+                    pattern: "haiku-4-7".to_string(),
+                    display_name: "Haiku 4.7".to_string(),
+                    context_limit: 200_000,
+                },
                 ModelEntry {
                     pattern: "opus-4-6".to_string(),
                     display_name: "Opus 4.6".to_string(),

@@ -22,15 +22,19 @@ try {
   // Determine platform key
   let platformKey = `${platform}-${arch}`;
   if (platform === 'linux') {
+    // Map Node.js arch names to package keys
+    const archMap = { 'x64': 'x64', 'arm64': 'arm64', 'arm': 'armv7' };
+    const archKey = archMap[arch] || arch;
+
     // Detect if static linking is needed based on glibc version
     function shouldUseStaticBinary() {
       try {
         const { execSync } = require('child_process');
-        const lddOutput = execSync('ldd --version 2>/dev/null || echo ""', { 
+        const lddOutput = execSync('ldd --version 2>/dev/null || echo ""', {
           encoding: 'utf8',
-          timeout: 1000 
+          timeout: 1000
         });
-        
+
         // Parse "ldd (GNU libc) 2.35" format
         const match = lddOutput.match(/(?:GNU libc|GLIBC).*?(\d+)\.(\d+)/);
         if (match) {
@@ -43,12 +47,16 @@ try {
         // If detection fails, default to dynamic binary
         return false;
       }
-      
+
       return false;
     }
-    
-    if (shouldUseStaticBinary()) {
-      platformKey = 'linux-x64-musl';
+
+    if (archKey === 'armv7') {
+      platformKey = 'linux-armv7';
+    } else if (shouldUseStaticBinary()) {
+      platformKey = `linux-${archKey}-musl`;
+    } else {
+      platformKey = `linux-${archKey}`;
     }
   }
 
@@ -57,6 +65,9 @@ try {
     'darwin-arm64': '@zuolan/micucodeline-darwin-arm64',
     'linux-x64': '@zuolan/micucodeline-linux-x64',
     'linux-x64-musl': '@zuolan/micucodeline-linux-x64-musl',
+    'linux-arm64': '@zuolan/micucodeline-linux-arm64',
+    'linux-arm64-musl': '@zuolan/micucodeline-linux-arm64-musl',
+    'linux-armv7': '@zuolan/micucodeline-linux-armv7',
     'win32-x64': '@zuolan/micucodeline-win32-x64',
     'win32-ia32': '@zuolan/micucodeline-win32-x64', // Use 64-bit for 32-bit
   };
@@ -93,13 +104,13 @@ try {
         if (pnpmMatch) {
           const pnpmRoot = pnpmMatch[1];
           const packageNameEncoded = packageName.replace('/', '+');
-          
+
           try {
             // Try to find any version of the package
             const pnpmContents = fs.readdirSync(pnpmRoot);
             const packagePattern = new RegExp(`^${packageNameEncoded.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}@`);
             const matchingPackage = pnpmContents.find(dir => packagePattern.test(dir));
-            
+
             if (matchingPackage) {
               return path.join(pnpmRoot, matchingPackage, 'node_modules', packageName, binaryName);
             }

@@ -33,18 +33,6 @@ desktop.ini
 *.tmp
 *.temp
 
-# Node (for npm packages)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Build artifacts
-npm-publish/
-
-# Debug and test files
-debug-postinstall.js
-test-postinstall.js
 
 
 .spec-workflow

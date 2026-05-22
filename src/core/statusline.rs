@@ -31,6 +31,15 @@ fn visible_width(text: &str) -> usize {
     width
 }
 
+/// Segments that should always start on a new line so the statusline rmicus into
+/// multi-row form (row 1 = upstream metrics, row 2 = path/git, row 3 = account + branding).
+fn forces_newline(id: crate::config::SegmentId) -> bool {
+    matches!(
+        id,
+        crate::config::SegmentId::Cwd | crate::config::SegmentId::Used
+    )
+}
+
 pub struct StatusLineGenerator {
     config: Config,
 }
@@ -63,7 +72,7 @@ impl StatusLineGenerator {
             self.join_with_powerline_arrows(&output, &enabled_segments)
         } else {
             // For all other separators, use white color and simple join
-            self.join_with_white_separators(&output)
+            self.join_with_white_separators(&output, &enabled_segments)
         }
     }
 
@@ -112,7 +121,7 @@ impl StatusLineGenerator {
         let full_line = if self.config.style.separator == "\u{e0b0}" {
             self.join_with_powerline_arrows(&rendered_segments, &enabled_segments)
         } else {
-            self.join_with_white_separators(&rendered_segments)
+            self.join_with_white_separators(&rendered_segments, &enabled_segments)
         };
 
         if visible_width(&full_line) <= max_width {
@@ -127,6 +136,20 @@ impl StatusLineGenerator {
         for i in 0..rendered_segments.len() {
             let segment = &rendered_segments[i];
             let segment_width = visible_width(segment);
+
+            // Force a new line in front of any forced-break segment so the layout splits into rows.
+            let force_break = i > 0
+                && enabled_segments
+                    .get(i)
+                    .map(|(c, _)| forces_newline(c.id))
+                    .unwrap_or(false);
+
+            if force_break && !current_line.is_empty() {
+                current_line.push_str("\x1b[0m");
+                lines.push(current_line.clone());
+                current_line.clear();
+                current_width = 0;
+            }
 
             // Check if adding this segment would exceed max_width
             if current_width > 0 && current_width + segment_width > max_width {
@@ -263,6 +286,19 @@ impl StatusLineGenerator {
             let segment = &rendered_segments[i];
             let segment_width = visible_width(segment);
 
+            // Force a new line in front of any forced-break segment.
+            let force_break = i > 0
+                && segment_configs
+                    .get(i)
+                    .map(|c| forces_newline(c.id))
+                    .unwrap_or(false);
+
+            if force_break && !current_line.is_empty() {
+                lines.push(current_line.clone());
+                current_line.clear();
+                current_width = 0;
+            }
+
             // Check if adding this segment would exceed max_width
             if current_width > 0 && current_width + segment_width > max_w {
                 // Current line would overflow, start a new line
@@ -377,7 +413,11 @@ impl StatusLineGenerator {
                 config.styles.text_bold,
             );
 
-            let mut segment = format!("{} {}", icon_colored, text_styled);
+            let mut segment = if data.primary.is_empty() {
+                icon_colored
+            } else {
+                format!("{} {}", icon_colored, text_styled)
+            };
 
             if !data.secondary.is_empty() {
                 segment.push_str(&format!(
@@ -470,14 +510,12 @@ impl StatusLineGenerator {
     }
 
     /// Join segments with white separators (non-Powerline)
-    fn join_with_white_separators(&self, rendered_segments: &[String]) -> String {
-        if rendered_segments.is_empty() {
-            return String::new();
-        }
-
-        // Use white color for separator
-        let white_separator = format!("\x1b[37m{}\x1b[0m", self.config.style.separator);
-        rendered_segments.join(&white_separator)
+    fn join_with_white_separators(
+        &self,
+        rendered_segments: &[String],
+        segment_configs: &[(SegmentConfig, SegmentData)],
+    ) -> String {
+        self.join_with_separators(rendered_segments, segment_configs, false)
     }
 
     /// Join segments with Powerline arrow separators with proper color transitions
@@ -486,34 +524,60 @@ impl StatusLineGenerator {
         rendered_segments: &[String],
         segment_configs: &[(SegmentConfig, SegmentData)],
     ) -> String {
+        self.join_with_separators(rendered_segments, segment_configs, true)
+    }
+
+    /// Shared join routine: inserts `\n` before any `Cwd` segment (after the first),
+    /// otherwise uses the configured separator. For Powerline mode also resets style
+    /// at the line break so background colors don't bleed.
+    fn join_with_separators(
+        &self,
+        rendered_segments: &[String],
+        segment_configs: &[(SegmentConfig, SegmentData)],
+        powerline: bool,
+    ) -> String {
         if rendered_segments.is_empty() {
             return String::new();
         }
-
         if rendered_segments.len() == 1 {
             return rendered_segments[0].clone();
         }
 
-        let mut result = rendered_segments[0].clone();
+        let white_separator = format!("\x1b[37m{}\x1b[0m", self.config.style.separator);
+        let mut out = String::new();
+        out.push_str(&rendered_segments[0]);
 
-        for (i, _) in rendered_segments.iter().enumerate().skip(1) {
-            let prev_bg = segment_configs
-                .get(i - 1)
-                .and_then(|(config, _)| config.colors.background.as_ref());
-            let curr_bg = segment_configs
+        for (i, segment) in rendered_segments.iter().enumerate().skip(1) {
+            // Insert newline before any forced-break segment so the row breaks cleanly.
+            let force_break = segment_configs
                 .get(i)
-                .and_then(|(config, _)| config.colors.background.as_ref());
+                .map(|(c, _)| forces_newline(c.id))
+                .unwrap_or(false);
 
-            // Create Powerline arrow with color transition
-            let arrow = self.create_powerline_arrow(prev_bg, curr_bg);
+            if force_break {
+                // Reset before the line break so previous bg/fg doesn't leak.
+                out.push_str("\x1b[0m\n");
+            } else if powerline {
+                let prev_bg = segment_configs
+                    .get(i - 1)
+                    .and_then(|(c, _)| c.colors.background.as_ref());
+                let curr_bg = segment_configs
+                    .get(i)
+                    .and_then(|(c, _)| c.colors.background.as_ref());
+                out.push_str(&self.create_powerline_arrow(prev_bg, curr_bg));
+            } else {
+                out.push_str(&white_separator);
+            }
 
-            result.push_str(&arrow);
-            result.push_str(&rendered_segments[i]);
+            out.push_str(segment);
         }
 
-        // Reset colors at the end
-        result.push_str("\x1b[0m");
-        result
+        // Reset colors at the end so background doesn't bleed past the line.
+        if powerline {
+            out.push_str("\x1b[0m");
+        }
+
+        out
     }
 
     /// Create a Powerline arrow with proper color transition
@@ -589,6 +653,10 @@ pub fn collect_all_segments(
                 let segment = DirectorySegment::new();
                 segment.collect(input)
             }
+            crate::config::SegmentId::Cwd => {
+                let segment = CwdSegment::new();
+                segment.collect(input)
+            }
             crate::config::SegmentId::Git => {
                 let show_sha = segment_config
                     .options
@@ -626,12 +694,20 @@ pub fn collect_all_segments(
                 let segment = BalanceSegment::new();
                 segment.collect(input)
             }
-            crate::config::SegmentId::Group => {
-                let segment = GroupSegment::new();
+            crate::config::SegmentId::Used => {
+                let segment = UsedSegment::new();
                 segment.collect(input)
             }
             crate::config::SegmentId::Branding => {
-                let segment = BrandingSegment::new();
+                // Branding intentionally puts the brand name in `icon.*`; primary is left blank
+                // unless the user overrides it via the `text` option.
+                let text = segment_config
+                    .options
+                    .get("text")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                let segment = BrandingSegment::new().with_text(text);
                 segment.collect(input)
             }
         };

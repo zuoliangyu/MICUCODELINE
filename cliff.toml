@@ -47,7 +47,7 @@ conventional_commits = true
 filter_unconventional = true
 split_commits = false
 commit_preprocessors = [
-    { pattern = '\(#([0-9]+)\)', replace = "([#${1}](https://github.com/zuolan/MicuCodeLine/pull/${1}))" },
+    { pattern = '\(#([0-9]+)\)', replace = "([#${1}](https://github.com/zuoliangyu/MICUCODELINE/pull/${1}))" },
 ]
 commit_parsers = [
     { message = "^feat", group = "Added" },

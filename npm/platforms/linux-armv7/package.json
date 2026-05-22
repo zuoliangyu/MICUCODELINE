@@ -1,10 +1,10 @@
 {
-  "name": "@zuolan/micucodeline-darwin-arm64",
+  "name": "@zuolan/micucodeline-linux-armv7",
   "version": "1.4.0",
-  "description": "macOS arm64 binary for MicuCodeLine",
+  "description": "Linux ARMv7 binary for MicuCodeLine",
   "files": ["micucodeline"],
-  "os": ["darwin"],
-  "cpu": ["arm64"],
+  "os": ["linux"],
+  "cpu": ["arm"],
   "repository": {
     "type": "git",
     "url": "https://github.com/zuoliangyu/MICUCODELINE"

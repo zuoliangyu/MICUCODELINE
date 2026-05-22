@@ -30,7 +30,7 @@ pub fn run_setup() -> Result<(), Box<dyn std::error::Error>> {
     let mut use_user_auth = String::new();
     io::stdin().read_line(&mut use_user_auth)?;
 
-    let (access_token, new_api_user_id, exchange_rate, quota_per_unit) =
+    let (access_token, new_api_user_id, quota_per_unit) =
         if use_user_auth.trim().eq_ignore_ascii_case("y") {
             print!("Enter your Access Token: ");
             io::stdout().flush()?;
@@ -44,12 +44,6 @@ pub fn run_setup() -> Result<(), Box<dyn std::error::Error>> {
             io::stdin().read_line(&mut uid_str)?;
             let uid: i64 = uid_str.trim().parse().unwrap_or(0);
 
-            print!("Exchange rate USD→CNY (default 7.3, press Enter to use default): ");
-            io::stdout().flush()?;
-            let mut rate_str = String::new();
-            io::stdin().read_line(&mut rate_str)?;
-            let rate: f64 = rate_str.trim().parse().unwrap_or(7.3);
-
             print!("Quota per unit (default 500000, press Enter to use default): ");
             io::stdout().flush()?;
             let mut qpu_str = String::new();
@@ -59,20 +53,17 @@ pub fn run_setup() -> Result<(), Box<dyn std::error::Error>> {
             (
                 if token.is_empty() { None } else { Some(token) },
                 if uid == 0 { None } else { Some(uid) },
-                Some(rate),
                 Some(qpu),
             )
         } else {
-            (None, None, None, None)
+            (None, None, None)
         };
 
     // Create and save config
     let config = BalanceConfig {
         api_key,
-        user_id: None,
         access_token,
         new_api_user_id,
-        exchange_rate,
         quota_per_unit,
     };
 

@@ -97,14 +97,15 @@ fn read_settings_env() -> HashMap<String, String> {
     };
     let claude_dir = home.join(".claude");
 
+    // 先读 settings.local.json，再读 settings.json，后者填充前者没有的 key
     let mut merged: HashMap<String, String> = HashMap::new();
 
-    // 先读 settings.json，再读 settings.local.json（后者覆盖前者）
     for filename in &["settings.json", "settings.local.json"] {
         let path = claude_dir.join(filename);
         if let Ok(content) = std::fs::read_to_string(&path)
             && let Ok(s) = serde_json::from_str::<ClaudeSettings>(&content)
         {
+            // settings.local.json 后读，会覆盖 settings.json 中同名 key
             merged.extend(s.env);
         }
     }

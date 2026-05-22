@@ -15,9 +15,12 @@ console.log(`🚀 Preparing packages for version ${version}`);
 // Define platform structures
 const platforms = [
   'darwin-x64',
-  'darwin-arm64', 
+  'darwin-arm64',
   'linux-x64',
   'linux-x64-musl',
+  'linux-arm64',
+  'linux-arm64-musl',
+  'linux-armv7',
   'win32-x64'
 ];
 
@@ -25,23 +28,23 @@ const platforms = [
 platforms.forEach(platform => {
   const sourceDir = path.join(__dirname, '..', 'platforms', platform);
   const targetDir = path.join(__dirname, '..', '..', 'npm-publish', platform);
-  
+
   // Create directory
   fs.mkdirSync(targetDir, { recursive: true });
-  
+
   // Read template package.json
   const templatePath = path.join(sourceDir, 'package.json');
   const packageJson = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
-  
+
   // Update version
   packageJson.version = version;
-  
+
   // Write to target directory
   fs.writeFileSync(
     path.join(targetDir, 'package.json'),
     JSON.stringify(packageJson, null, 2) + '\n'
   );
-  
+
   console.log(`✓ Prepared @zuolan/micucodeline-${platform} v${version}`);
 });
 

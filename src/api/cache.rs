@@ -1,4 +1,4 @@
-use super::{ApiConfig, BalanceData};
+use super::{ApiConfig, BalanceData, client::ApiClient};
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
@@ -101,4 +101,55 @@ pub fn save_cached_balance(
         fs::write(path, serde_json::to_string(data)?)?;
     }
     Ok(())
+}
+
+/// 统一的余额获取入口：内存缓存 → /api/user/self（access_token 路径）→ billing 接口 → 磁盘缓存兜底。
+/// `Used` 和 `Balance` 两个段位都通过这个入口共享同一份 `BalanceData`。
+pub fn fetch_balance() -> Option<BalanceData> {
+    use crate::config::BalanceConfig;
+    use crate::utils::credentials;
+
+    // 自动从 Claude Code settings 读取 API Key 和 Base URL
+    // 优先级：settings.local.json > settings.json > 系统环境变量
+    let api_key = credentials::get_api_key()?;
+    let api_base_url = credentials::get_api_base_url()?;
+
+    let config = ApiConfig {
+        enabled: true,
+        api_key,
+        api_base_url,
+    };
+
+    let key = cache_key(&config);
+    if let Some(data) = get_in_memory_balance(&key) {
+        return Some(data);
+    }
+
+    let client = ApiClient::new(config);
+
+    let balance_config = BalanceConfig::load();
+    if let Some(ref bc) = balance_config
+        && let (Some(access_token), Some(user_id)) = (&bc.access_token, bc.new_api_user_id)
+    {
+        let quota_per_unit = bc.quota_per_unit.unwrap_or(500_000.0);
+        if let Ok(data) = client.get_user_self_balance(access_token, user_id, quota_per_unit) {
+            set_in_memory_balance(&key, &data);
+            let _ = save_cached_balance(&key, &data);
+            return Some(data);
+        }
+    }
+
+    if let Ok(data) = client.get_balance() {
+        set_in_memory_balance(&key, &data);
+        let _ = save_cached_balance(&key, &data);
+        return Some(data);
+    }
+
+    let (cached, _) = get_cached_balance(&key);
+    if let Some(data) = cached {
+        set_in_memory_balance(&key, &data);
+        return Some(data);
+    }
+
+    None
 }

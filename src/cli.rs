@@ -8,10 +8,6 @@ pub struct Cli {
     #[arg(short = 'c', long = "config")]
     pub config: bool,
 
-    /// Set theme
-    #[arg(short = 't', long = "theme")]
-    pub theme: Option<String>,
-
     /// Print current configuration
     #[arg(long = "print")]
     pub print: bool,

@@ -1,9 +1,9 @@
 {
-  "name": "@zuolan/micucodeline-darwin-arm64",
+  "name": "@zuolan/micucodeline-linux-arm64",
   "version": "1.4.0",
-  "description": "macOS arm64 binary for MicuCodeLine",
+  "description": "Linux ARM64 binary for MicuCodeLine",
   "files": ["micucodeline"],
-  "os": ["darwin"],
+  "os": ["linux"],
   "cpu": ["arm64"],
   "repository": {
     "type": "git",

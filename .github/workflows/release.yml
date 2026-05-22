@@ -23,6 +23,18 @@ jobs:
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
             name: micucodeline-linux-x64-static.tar.gz
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: micucodeline-linux-arm64.tar.gz
+            use_cross: true
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            name: micucodeline-linux-arm64-static.tar.gz
+            use_cross: true
+          - target: armv7-unknown-linux-gnueabihf
+            os: ubuntu-latest
+            name: micucodeline-linux-armv7.tar.gz
+            use_cross: true
           - target: x86_64-pc-windows-gnu
             os: ubuntu-latest
             name: micucodeline-windows-x64.zip
@@ -54,7 +66,16 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y musl-tools
 
-    - name: Build binary
+    - name: Install cross
+      if: matrix.use_cross
+      run: cargo install cross --git https://github.com/cross-rs/cross
+
+    - name: Build binary (cross)
+      if: matrix.use_cross
+      run: cross build --release --target ${{ matrix.target }}
+
+    - name: Build binary (cargo)
+      if: ${{ !matrix.use_cross }}
       run: cargo build --release --target ${{ matrix.target }}
 
     - name: Package Linux/macOS
@@ -138,41 +159,52 @@ jobs:
         tar -xzf artifacts/micucodeline-linux-x64-static.tar.gz/micucodeline-linux-x64-static.tar.gz -C extracted
         mv extracted/micucodeline extracted/micucodeline-linux-x64-musl
 
+        # Linux ARM64
+        tar -xzf artifacts/micucodeline-linux-arm64.tar.gz/micucodeline-linux-arm64.tar.gz -C extracted
+        mv extracted/micucodeline extracted/micucodeline-linux-arm64
+
+        # Linux ARM64 musl (static)
+        tar -xzf artifacts/micucodeline-linux-arm64-static.tar.gz/micucodeline-linux-arm64-static.tar.gz -C extracted
+        mv extracted/micucodeline extracted/micucodeline-linux-arm64-musl
+
+        # Linux ARMv7
+        tar -xzf artifacts/micucodeline-linux-armv7.tar.gz/micucodeline-linux-armv7.tar.gz -C extracted
+        mv extracted/micucodeline extracted/micucodeline-linux-armv7
+
         # Windows
         unzip artifacts/micucodeline-windows-x64.zip/micucodeline-windows-x64.zip -d extracted
         mv extracted/micucodeline.exe extracted/micucodeline-win32-x64.exe
 
-        # List extracted files
         ls -la extracted/
 
     - name: Prepare NPM packages
       run: |
-        # Prepare packages with version management
         node npm/scripts/prepare-packages.js
 
-        # Copy binaries to platform directories
         cp extracted/micucodeline-darwin-x64 npm-publish/darwin-x64/micucodeline
         cp extracted/micucodeline-darwin-arm64 npm-publish/darwin-arm64/micucodeline
         cp extracted/micucodeline-linux-x64 npm-publish/linux-x64/micucodeline
         cp extracted/micucodeline-linux-x64-musl npm-publish/linux-x64-musl/micucodeline
+        cp extracted/micucodeline-linux-arm64 npm-publish/linux-arm64/micucodeline
+        cp extracted/micucodeline-linux-arm64-musl npm-publish/linux-arm64-musl/micucodeline
+        cp extracted/micucodeline-linux-armv7 npm-publish/linux-armv7/micucodeline
         cp extracted/micucodeline-win32-x64.exe npm-publish/win32-x64/micucodeline.exe
 
-        # Set executable permissions for Unix binaries
         chmod +x npm-publish/darwin-x64/micucodeline
         chmod +x npm-publish/darwin-arm64/micucodeline
         chmod +x npm-publish/linux-x64/micucodeline
         chmod +x npm-publish/linux-x64-musl/micucodeline
+        chmod +x npm-publish/linux-arm64/micucodeline
+        chmod +x npm-publish/linux-arm64-musl/micucodeline
+        chmod +x npm-publish/linux-armv7/micucodeline
 
-        # Verify packages
-        echo "Package structure:"
         find npm-publish -name "package.json" -exec echo "=== {} ===" \; -exec head -5 {} \;
 
     - name: Publish platform packages to NPM
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: |
-        # Publish platform packages first
-        for platform in darwin-x64 darwin-arm64 linux-x64 linux-x64-musl win32-x64; do
+        for platform in darwin-x64 darwin-arm64 linux-x64 linux-x64-musl linux-arm64 linux-arm64-musl linux-armv7 win32-x64; do
           echo "📦 Publishing @zuolan/micucodeline-$platform"
           cd npm-publish/$platform
           npm publish --access public

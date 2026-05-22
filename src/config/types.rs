@@ -66,6 +66,7 @@ pub enum AnsiColor {
 pub enum SegmentId {
     Model,
     Directory,
+    Cwd,
     Git,
     ContextWindow,
     Usage,
@@ -73,8 +74,8 @@ pub enum SegmentId {
     Session,
     OutputStyle,
     Update,
+    Used,
     Balance,
-    Group,
     Branding,
 }
 
