@@ -47,8 +47,6 @@ impl HelpComponent {
                 ("[R]", "Reset"),
                 ("[E]", "Edit Separator"),
                 ("[S]", "Save Config"),
-                ("[W]", "Write Theme"),
-                ("[Ctrl+S]", "Save Theme"),
                 ("[Esc]", "Quit"),
             ]
         };

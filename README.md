@@ -20,7 +20,7 @@ MicuCodeLine 是 **MicuCode 专用版** Claude Code 状态栏工具，集成余�
 - Git / 目录 / 上下文 / 会话等常用 Segment
 - 跨平台发布（macOS / Linux / Windows / ARM Linux 嵌入式设备）
 
-> v1.4.0 起状态栏样式锁定为内置主题，不再支持 `--theme` 切换或自定义 `config.toml`。
+> 状态栏的核心三段（**已用 / 余额 / MICU 品牌**）始终显示，保证一眼看到 MicuCode 账户状态。其余段（Model、Cwd、Git、Cost、Session、Directory 等）的开关、配色、图标、顺序、分隔符均可在 TUI 中编辑（`micucodeline --config`），按 `S` 保存到 `~/.claude/micucodeline/config.toml`，也可手动编辑该文件。主题保持单一内置（无 `--theme` 切换）。
 
 ## 安装
 
@@ -93,11 +93,12 @@ MicuCodeLine 自动读取 Claude Code 的 `~/.claude/settings.json` 中已有的
 
 直接双击可执行文件（或命令行运行），会自动弹出交互式主菜单，可在其中：
 
-- 打开 TUI 配置面板（查看当前 Segment / 主题信息，只读）
+- 打开 TUI 配置面板（编辑非锁定段，按 `S` 保存到 `config.toml`）
 - 检查配置
 
 ```bash
 micucodeline --check       # 校验当前配置是否正确
 micucodeline --print       # 输出当前配置内容
-micucodeline --config      # 打开交互式 TUI 配置面板（查看用）
+micucodeline --config      # 打开交互式 TUI 配置面板（可编辑保存）
+micucodeline --init        # 在 ~/.claude/micucodeline/ 写入默认 config.toml
 ```

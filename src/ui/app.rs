@@ -1,4 +1,4 @@
-use crate::config::{Config, SegmentId, StyleMode};
+use crate::config::{Config, SegmentId, StyleMode, is_locked_segment};
 use crate::ui::components::{
     color_picker::{ColorPickerComponent, NavDirection},
     help::HelpComponent,
@@ -66,8 +66,8 @@ impl App {
     }
 
     pub fn run() -> Result<(), Box<dyn std::error::Error>> {
-        // Themes are hard-coded; just take the default config in TUI mode.
-        let config = Config::default();
+        // Load saved user config; fall back to defaults if missing or invalid.
+        let config = Config::load().unwrap_or_else(|_| Config::default());
 
         // Terminal setup
         enable_raw_mode()?;
@@ -173,24 +173,15 @@ impl App {
                     // Handle main app events
                     match key.code {
                         KeyCode::Esc => app.should_quit = true,
-                        KeyCode::Char('s') => {
-                            if key.modifiers.contains(KeyModifiers::CONTROL) {
-                                // Ctrl+S: Save as new theme with name input
-                                app.name_input.open("Save as New Theme", "Enter theme name");
+                        KeyCode::Char('s') | KeyCode::Char('w') | KeyCode::Char('W') => {
+                            // [S] / [W] / [Ctrl+S] all save to ~/.claude/micucodeline/config.toml.
+                            if let Err(e) = app.save_config() {
+                                app.status_message =
+                                    Some(format!("Failed to save config: {}", e));
                             } else {
-                                // s: Save config to config.toml
-                                if let Err(e) = app.save_config() {
-                                    app.status_message =
-                                        Some(format!("Failed to save config: {}", e));
-                                } else {
-                                    app.status_message =
-                                        Some("Configuration saved to config.toml!".to_string());
-                                }
+                                app.status_message =
+                                    Some("Configuration saved to config.toml!".to_string());
                             }
-                        }
-                        KeyCode::Char('w') | KeyCode::Char('W') => {
-                            // w/W: Write config to current theme
-                            app.write_to_current_theme();
                         }
                         KeyCode::Up => {
                             if key.modifiers.contains(KeyModifiers::SHIFT) {
@@ -265,8 +256,6 @@ impl App {
                 "[R] Reset",
                 "[E] Edit Separator",
                 "[S] Save Config",
-                "[W] Write Theme",
-                "[Ctrl+S] Save Theme",
                 "[Esc] Quit",
             ]
         };
@@ -449,6 +438,11 @@ impl App {
             Panel::SegmentList => {
                 // Toggle segment enabled/disabled in segment list
                 if let Some(segment) = self.config.segments.get_mut(self.selected_segment) {
+                    if is_locked_segment(segment.id) {
+                        self.status_message =
+                            Some("Balance / Used / Branding 不可禁用".to_string());
+                        return;
+                    }
                     segment.enabled = !segment.enabled;
                     let segment_name = match segment.id {
                         SegmentId::Model => "Model",
@@ -480,6 +474,11 @@ impl App {
                     FieldSelection::Enabled => {
                         // Toggle enabled state in settings panel too
                         if let Some(segment) = self.config.segments.get_mut(self.selected_segment) {
+                            if is_locked_segment(segment.id) {
+                                self.status_message =
+                                    Some("Balance / Used / Branding 不可禁用".to_string());
+                                return;
+                            }
                             segment.enabled = !segment.enabled;
                             let segment_name = match segment.id {
                                 SegmentId::Model => "Model",
@@ -586,6 +585,7 @@ impl App {
 
     fn switch_to_theme(&mut self, theme_name: &str) {
         self.config = crate::ui::themes::ThemePresets::get_theme(theme_name);
+        self.config.enforce_locks();
         self.selected_segment = 0;
         self.preview.update_preview(&self.config);
         self.status_message = Some(format!("Switched to {} theme", theme_name));
@@ -595,6 +595,7 @@ impl App {
     fn reset_to_theme_defaults(&mut self) {
         let current_theme = self.config.theme.clone();
         self.config = crate::ui::themes::ThemePresets::get_theme(&current_theme);
+        self.config.enforce_locks();
         self.selected_segment = 0;
         self.preview.update_preview(&self.config);
         self.status_message = Some(format!("Reset {} theme to defaults", current_theme));
@@ -629,14 +630,22 @@ impl App {
         }
     }
 
-    /// Saving themes is disabled — themes are hard-coded.
+    /// `[W]` is an alias for `[S]`; both persist the current config to disk.
     fn write_to_current_theme(&mut self) {
-        self.status_message = Some("Themes are hard-coded; saving is disabled.".to_string());
+        match self.config.save() {
+            Ok(()) => {
+                self.status_message = Some("Configuration saved to config.toml!".to_string());
+            }
+            Err(e) => {
+                self.status_message = Some(format!("Failed to save config: {}", e));
+            }
+        }
     }
 
-    /// Saving new themes is disabled — themes are hard-coded.
+    /// Saving as a new theme is not supported (single brand theme); behave like a
+    /// regular save so the user's edits are not lost if they trigger this stale path.
     fn save_as_new_theme(&mut self, _theme_name: &str) {
-        self.status_message = Some("Themes are hard-coded; saving is disabled.".to_string());
+        self.write_to_current_theme();
     }
 
     /// Open separator editor with current separator

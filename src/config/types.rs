@@ -79,6 +79,20 @@ pub enum SegmentId {
     Branding,
 }
 
+/// Segments that define the MicuCode brand identity. They are always present
+/// in the rendered statusline and cannot be disabled via config.toml or the TUI.
+/// Their colors, icons, position, and styles remain freely user-customizable.
+pub const LOCKED_SEGMENTS: &[SegmentId] = &[
+    SegmentId::Balance,
+    SegmentId::Used,
+    SegmentId::Branding,
+];
+
+/// Returns true if the given segment id is one of the always-on brand segments.
+pub fn is_locked_segment(id: SegmentId) -> bool {
+    LOCKED_SEGMENTS.contains(&id)
+}
+
 // Legacy compatibility structure
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SegmentsConfig {
@@ -244,6 +258,30 @@ impl NormalizedUsage {
 }
 
 impl Config {
+    /// Guarantee the three core MicuCode brand segments (Balance, Used, Branding)
+    /// exist in `segments` and are enabled. Called on load and save so a hand-edited
+    /// `config.toml` can never strip them. Other attributes (color, icon, position,
+    /// bold, options) are left untouched.
+    pub fn enforce_locks(&mut self) {
+        // 1. Force enabled = true on any locked segment present.
+        for seg in &mut self.segments {
+            if is_locked_segment(seg.id) {
+                seg.enabled = true;
+            }
+        }
+
+        // 2. Re-inject any locked segment that's missing entirely (recovery path).
+        //    Append at the end so user reorder of other segments is preserved.
+        let present: std::collections::HashSet<SegmentId> =
+            self.segments.iter().map(|s| s.id).collect();
+        let default = crate::ui::themes::ThemePresets::get_default();
+        for seg in default.segments {
+            if is_locked_segment(seg.id) && !present.contains(&seg.id) {
+                self.segments.push(seg);
+            }
+        }
+    }
+
     /// Check if current config matches the specified theme preset
     pub fn matches_theme(&self, theme_name: &str) -> bool {
         let theme_preset = crate::ui::themes::ThemePresets::get_theme(theme_name);

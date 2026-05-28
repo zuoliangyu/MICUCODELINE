@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.1] - 2026-05-28
+
+> 部分开放配置：核心三段保持锁定，其余允许用户自定义。
+
+### Added
+
+- 重新支持 `~/.claude/micucodeline/config.toml`：TUI 中按 `S` 保存，或手动编辑文件
+- `Config::load()` 自动调用 `enforce_locks()`：保证 `Balance` / `Used` / `Branding` 始终存在且 `enabled = true`，即使 config.toml 被改坏也会回退
+- `Config::check()` 新增锁定段校验：缺失或被禁用时返回明确错误信息
+
+### Changed
+
+- TUI 配置面板从只读改回可写：保留段顺序、配色、图标、bold、分隔符的编辑能力
+- `[W]` / `[Ctrl+S]` 与 `[S]` 行为统一为「保存到 config.toml」，移除 v1.4.0 的「保存主题」死路径
+- README 与帮助文本同步：去掉「config.toml 已废弃」的旧描述
+
+### Locked (intentionally)
+
+- `Balance` / `Used` / `Branding` 三段不可禁用、不可移除（颜色 / 图标 / 位置仍可调）
+- 主题仍为单一内置 Powerline 渐变（无 `--theme` 切换）
+
 ## [1.4.0] - 2026-05-23
 
 > 大版本重写：基于 EFlowCodeLine 1.7.0 架构整体重构，品牌切换为 MICU。
