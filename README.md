@@ -82,12 +82,16 @@ MicuCodeLine 自动读取 Claude Code 的 `~/.claude/settings.json` 中已有的
 | 变量 | 说明 |
 |------|------|
 | `ANTHROPIC_AUTH_TOKEN` 或 `ANTHROPIC_API_KEY` | 你的 API Key（MicuCode 控制台获取） |
-| `ANTHROPIC_BASE_URL` | 中转站地址，如 `https://e-flowcode.cc` |
+| `ANTHROPIC_BASE_URL` | 中转站地址，如 `https://www.micuapi.ai` |
 
 只要这两个变量已配置（Claude Code 正常工作的前提），余额就会自动显示，无需再做任何设置。
 
-> **注意**：余额显示依赖 new-api 后台的「额度查询接口返回令牌额度而非用户额度」开关处于**关闭**状态（即返回用户账户余额而非 API Key 额度）。
-> 管理员可在 `新API后台 → 设置 → 运营设置` 中找到该开关。
+余额查询用上面的 URL + API Key 走两段式，自动适配不同中转站：
+
+1. 先尝试 `/api/user/self`（API Key 直连，部分中转站支持，返回真实分组与额度）
+2. 失败则回退标准 billing 接口（`/v1/dashboard/billing/subscription` + `usage`）
+
+> **注意**：若中转站把 `/api/user/self` 限制为仅 session token 可访问（如 micuapi），则走 billing 接口，显示套餐额度 − 已用量。两条路径均无需额外配置。
 
 ## 首次使用
 

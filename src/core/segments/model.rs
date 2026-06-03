@@ -1,5 +1,5 @@
 use super::{Segment, SegmentData};
-use crate::config::{InputData, ModelConfig, SegmentId};
+use crate::config::{InputData, SegmentId};
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -17,8 +17,12 @@ impl Segment for ModelSegment {
         metadata.insert("model_id".to_string(), input.model.id.clone());
         metadata.insert("display_name".to_string(), input.model.display_name.clone());
 
+        // Directly show the display name Claude Code already resolved for us.
+        // We intentionally do NOT remap it through models.toml patterns — pattern
+        // matching produced odd fallback names (e.g. a generic "Claude 1M") for
+        // models that didn't match a known entry.
         Some(SegmentData {
-            primary: self.format_model_name(&input.model.id, &input.model.display_name),
+            primary: input.model.display_name.clone(),
             secondary: String::new(),
             metadata,
         })
@@ -26,19 +30,5 @@ impl Segment for ModelSegment {
 
     fn id(&self) -> SegmentId {
         SegmentId::Model
-    }
-}
-
-impl ModelSegment {
-    fn format_model_name(&self, id: &str, display_name: &str) -> String {
-        let model_config = ModelConfig::load();
-
-        // Try to get display name from external config first
-        if let Some(config_name) = model_config.get_display_name(id) {
-            config_name
-        } else {
-            // Fallback to Claude Code's official display_name for unrecognized models
-            display_name.to_string()
-        }
     }
 }

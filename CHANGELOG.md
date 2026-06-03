@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.5.0] - 2026-06-03
+
+> 修复 1.4.0 重写后余额获取失效；模型名直接显示，不再经 models.toml 转录。
+
+### Fixed
+
+- **余额获取恢复**：1.4.0 重写为 EFlowCodeLine 架构时丢掉了「用环境 URL + API Key 直接查余额」的代码路径，导致只配了 API Key 的用户余额段位静默消失。现已恢复，并改为两段式：
+  - 先尝试用 API Key 直连 `/api/user/self`（部分中转站支持，返回真实分组与额度）
+  - 失败再回退标准 billing 接口（`/v1/dashboard/billing/subscription` + `usage`）
+  - 两条路径都只使用 `~/.claude/settings.json` env（或系统环境变量）里的 `ANTHROPIC_BASE_URL` + `ANTHROPIC_AUTH_TOKEN`/`ANTHROPIC_API_KEY`，无需任何额外配置
+  - 修复了 micuapi 这类「`/api/user/self` 需要 session token、API Key 仅能访问 billing 接口」的中转站余额不显示的问题
+
+### Changed
+
+- **模型段直接显示获取到的名称**：不再把 model id 经 `models.toml` 的 pattern 转录成展示名。此前未匹配到的模型会落到通用兜底（如 `claude-opus-4-8[1m]` → 「Claude 1M」），显示很怪。现在直接采用 Claude Code 传入的 `display_name`（如「Opus 4.8 (1M)」）。`models.toml` 仍用于上下文窗口段的 token 上限匹配。
+
+### Removed
+
+- `ModelConfig::get_display_name`：模型名转录逻辑已废弃，随之移除
+
 ## [1.4.1] - 2026-05-28
 
 > 部分开放配置：核心三段保持锁定，其余允许用户自定义。

@@ -103,7 +103,8 @@ pub fn save_cached_balance(
     Ok(())
 }
 
-/// 统一的余额获取入口：内存缓存 → /api/user/self（access_token 路径）→ billing 接口 → 磁盘缓存兜底。
+/// 余额获取入口：内存缓存 → 用环境里的 Base URL + API Key 查余额（先 /api/user/self，
+/// 失败再退 billing 接口）→ 磁盘缓存兜底。
 /// `Used` 和 `Balance` 两个段位都通过这个入口共享同一份 `BalanceData`。
 pub fn fetch_balance() -> Option<BalanceData> {
     use crate::config::BalanceConfig;
@@ -127,18 +128,19 @@ pub fn fetch_balance() -> Option<BalanceData> {
 
     let client = ApiClient::new(config);
 
-    let balance_config = BalanceConfig::load();
-    if let Some(ref bc) = balance_config
-        && let (Some(access_token), Some(user_id)) = (&bc.access_token, bc.new_api_user_id)
-    {
-        let quota_per_unit = bc.quota_per_unit.unwrap_or(500_000.0);
-        if let Ok(data) = client.get_user_self_balance(access_token, user_id, quota_per_unit) {
-            set_in_memory_balance(&key, &data);
-            let _ = save_cached_balance(&key, &data);
-            return Some(data);
-        }
+    // 每美元对应的额度单位，可选地由 balance_config.json 覆盖，默认 new-api 的 500000。
+    let quota_per_unit = BalanceConfig::load()
+        .and_then(|bc| bc.quota_per_unit)
+        .unwrap_or(500_000.0);
+
+    // 1. 优先：用 API Key 直接调 /api/user/self（部分中转站支持，返回真实分组+额度）。
+    if let Ok(data) = client.get_user_self(quota_per_unit) {
+        set_in_memory_balance(&key, &data);
+        let _ = save_cached_balance(&key, &data);
+        return Some(data);
     }
 
+    // 2. 回退：标准 billing 接口（subscription + usage）。micuapi 等中转站走这条。
     if let Ok(data) = client.get_balance() {
         set_in_memory_balance(&key, &data);
         let _ = save_cached_balance(&key, &data);

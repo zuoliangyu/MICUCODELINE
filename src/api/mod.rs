@@ -100,7 +100,7 @@ impl BalanceData {
         }
     }
 
-    /// 从 subscription 和 usage 两个接口响应计算余额
+    /// 从 subscription 和 usage 两个接口响应计算余额（billing 路径）。
     pub fn from_billing(subscription: &SubscriptionResponse, usage: &UsageResponse) -> Self {
         let total = subscription.hard_limit_usd;
         let used = usage.total_usage / 100.0; // total_usage 单位是分

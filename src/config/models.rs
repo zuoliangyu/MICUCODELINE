@@ -75,22 +75,6 @@ impl ModelConfig {
         200_000
     }
 
-    /// Get display name for a model based on ID pattern matching
-    /// Checks external config first, then falls back to built-in config
-    /// Returns None if no match found (should use fallback display_name)
-    pub fn get_display_name(&self, model_id: &str) -> Option<String> {
-        let model_lower = model_id.to_lowercase();
-
-        // Check model entries
-        for entry in &self.model_entries {
-            if model_lower.contains(&entry.pattern.to_lowercase()) {
-                return Some(entry.display_name.clone());
-            }
-        }
-
-        None
-    }
-
     /// Create default model configuration file with minimal template
     pub fn create_default_file<P: AsRef<Path>>(path: P) -> Result<(), Box<dyn std::error::Error>> {
         // Create a minimal template config (not the full fallback config)
