@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.1] - 2026-11-15
+
+### Fixed
+
+- **README 官网地址更正**：官网链接由 `https://e-flowcode.cc` 更正为 `https://www.micuapi.ai`。
+
 ## [1.5.0] - 2026-06-03
 
 > 修复 1.4.0 重写后余额获取失效；模型名直接显示，不再经 models.toml 转录。

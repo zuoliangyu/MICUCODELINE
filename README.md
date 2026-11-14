@@ -6,7 +6,7 @@
 MicuCodeLine 是 **MicuCode 专用版** Claude Code 状态栏工具，集成余额显示与主题/TUI 配置。
 
 - 原作者仓库：https://github.com/Haleclipse/CCometixLine
-- MicuCodeLine 官网：https://e-flowcode.cc
+- MicuCodeLine 官网：https://www.micuapi.ai
 
 ## 效果预览
 
